@@ -1,0 +1,35 @@
+# One-time setup before this can run: register a pending trusted publisher at
+# https://rubygems.org/settings/pending_trusted_publishers for enola-guides,
+# pointing at owner misabegovic, repository enola-guides, workflow release.yml.
+# Leave the environment field blank there, or add a matching `environment:` to
+# the job below. No API token is involved at any point.
+name: Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  push:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+
+      - uses: rubygems/configure-rubygems-credentials@v2.1.0
+
+      - name: Build and push
+        run: |
+          set -euo pipefail
+          mkdir -p pkg
+          gem build enola-guides.gemspec -o pkg/enola-guides.gem
+          gem push pkg/enola-guides.gem
