@@ -22,7 +22,9 @@ thirteen laws in the Ruby DSL, one file each, from "jobs never invoke controller
 "billing keeps to its own tables" and "a mutating action is authorized",
 with Prism and Rubydex configured as providers beside the extractors.
 [`examples/ember-app`](examples/ember-app): an Ember application bound to
-the conventions recipe in one block. [`examples/laws`](examples/laws/README.md):
+the conventions recipe in one block. [`examples/knowledge-base`](examples/knowledge-base/README.md):
+two pages anchored to code, a cluster config, receipts and a finding ledger,
+the smallest knowledge base the skills and hooks run against. [`examples/laws`](examples/laws/README.md):
 twenty-six laws, one directory each, from foreign keys on a tenant column
 to parts that may not cycle, each a complete declaration you copy and run.
 
@@ -43,6 +45,16 @@ to parts that may not cycle, each a complete declaration you copy and run.
    census, the runtime capture.
 8. [Beyond one repository](guides/08-beyond-one-repo.md): the cluster, the
    seams, the laws across them, the history.
+9. [A knowledge base with enola](guides/09-a-knowledge-base-with-enola.md):
+   what a wiki of decisions gets when its pages anchor to code and every
+   number it states was read from a receipt.
+10. [Hooks](guides/10-hooks.md): the four agent hooks a knowledge base runs
+    (intent-first gate, turn record, stop-time debt, session refresh).
+11. [The skills, as they run](guides/11-the-skills-as-they-run.md): deepdive
+    before shaping, claim check while ingesting, drift on a schedule,
+    citation hygiene, the blast radius.
+12. [The wrapper](guides/12-the-wrapper.md): the thin command the skills
+    call, the named skip, the receipts and the ledger.
 
 ## Skills
 
@@ -52,7 +64,12 @@ before grepping, grade after changing), `enola-laws` (write a law as a
 sentence with a reason, lint it, read what it verdicts),
 `enola-grade-before-push` (the delta is the deliverable, a declined grade
 is not a pass), `enola-intent-first` (read the governing decision before
-the file moves). Copy a directory into your agent's skills folder.
+the file moves), and the five a knowledge base runs: `enola-deepdive`,
+`enola-ingest-check`, `enola-drift`, `enola-citation-hygiene`,
+`enola-zoom-out`, each described as it runs in
+[guide 11](guides/11-the-skills-as-they-run.md). Copy a directory into
+your agent's skills folder; the hooks they pair with are under
+[`templates/hooks/`](templates/hooks).
 
 ## Templates and recipes
 

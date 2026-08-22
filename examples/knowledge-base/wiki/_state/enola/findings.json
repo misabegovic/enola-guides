@@ -1,0 +1,10 @@
+{
+  "findings": {
+    "cycles|app/jobs -> app/models -> app/jobs": {
+      "verdict": "accepted",
+      "at": "2026-08-22",
+      "reason": "real; the mailer path",
+      "landed": "wiki/shop/permanent/architecture.md"
+    }
+  }
+}

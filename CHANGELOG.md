@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.0 (2026-08-22)
+
+What a knowledge base gets. Four guides (a knowledge base with enola,
+hooks, the skills as they run, the wrapper), four hook templates
+(intent-first gate, turn record, stop-time debt, session refresh), five
+skills as a knowledge base runs them (deepdive, ingest check, drift,
+citation hygiene, zoom out) and a worked example knowledge base with two
+anchored pages, receipts and a finding ledger.
+
 ## 0.1.2 (2026-08-22)
 
 One law per file: the Rails shop, the cluster laws, the maintenance-task laws

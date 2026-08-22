@@ -1,0 +1,7 @@
+cluster: shop
+knowledge: wiki
+repos:
+  - path: ../rails-shop
+    label: shop
+  - path: ../ember-app
+    label: shop-ui
