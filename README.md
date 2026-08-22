@@ -9,4 +9,9 @@ a Rails app, on Ember, as a constraints gate in CI, and through hooks and
 agent skills. Consumed by [enola-rb](https://github.com/misabegovic/enola-rb),
 the gem that runs enola.
 
-Placeholder release. No content yet.
+## Recipes
+
+[recipes/](recipes/README.md) holds architecture recipes a repository copies
+into its own `enola/recipes/` and binds in one line, starting with the Ember
+conventions. Each is a starting point the team reviews, not a default the
+tool applies.
