@@ -18,7 +18,7 @@ gem contents enola-guides
 ## Start with an example
 
 [`examples/rails-shop`](examples/rails-shop): a Rails application declaring
-thirteen laws in the Ruby DSL, from "jobs never invoke controller code" to
+thirteen laws in the Ruby DSL, one file each, from "jobs never invoke controller code" to
 "billing keeps to its own tables" and "a mutating action is authorized",
 with Prism and Rubydex configured as providers beside the extractors.
 [`examples/ember-app`](examples/ember-app): an Ember application bound to

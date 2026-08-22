@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.2 (2026-08-22)
+
+One law per file: the Rails shop, the cluster laws, the maintenance-task laws
+and the starter each put every law in a file of its own that declares the parts it
+speaks about, so a reader finds a law by its name and a reviewer sees one
+law per diff.
+
 ## 0.1.1 (2026-08-22)
 
 The laws catalogue: `examples/laws/`, twenty-six complete declarations one
