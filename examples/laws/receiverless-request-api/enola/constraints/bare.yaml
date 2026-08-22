@@ -1,0 +1,10 @@
+components:
+  - name: models
+    match: ["app/models/**"]
+rules:
+  - id: bare-params
+    forbid: models
+    to_name: [params]
+    via: calls
+    receiver: none
+    because: "params without a receiver is the controller's; request.params is an object the caller handed in"

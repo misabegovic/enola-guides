@@ -1,0 +1,10 @@
+components:
+  - name: billing
+    match: ["app/billing/**"]
+    public: ["app/billing/public/**"]
+  - name: orders
+    match: ["app/orders/**"]
+rules:
+  - id: billing-surface
+    private: billing
+    because: "billing is reached through its public files; the rest is implementation"

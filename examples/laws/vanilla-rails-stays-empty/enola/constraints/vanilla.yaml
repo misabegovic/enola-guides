@@ -1,0 +1,11 @@
+use_recipe:
+  - recipe: vanilla-rails
+    as: vanilla
+    bind:
+      models: { match: ["app/models/**"] }
+      controllers: { match: ["app/controllers/**"] }
+      services: { match: ["app/services/**"] }
+      forms: { match: ["app/forms/**"] }
+      policies: { match: ["app/policies/**"] }
+      decorators: { match: ["app/decorators/**"] }
+      presenters: { match: ["app/presenters/**"] }

@@ -1,0 +1,7 @@
+use_recipe:
+  - recipe: cqrs
+    as: cqrs
+    bind:
+      commands: { match: ["app/commands/**"] }
+      queries: { match: ["app/queries/**"] }
+      read-models: { match: ["app/read_models/**"] }

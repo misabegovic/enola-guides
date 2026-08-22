@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.1 (2026-08-22)
+
+The laws catalogue: `examples/laws/`, twenty-six complete declarations one
+directory each, nineteen proven by enola's benchmark suite and seven
+generalised from daily use (foreign keys, maintenance tasks, a public tool
+prefix, one door to a schema, readers that read the store only, cluster
+laws), each with a README and verified with `constraints lint`.
+
 ## 0.1.0 (2026-08-22)
 
 First content. Eight guides (start here, a Rails application, an Ember

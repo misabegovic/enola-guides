@@ -1,0 +1,8 @@
+components:
+  - name: services
+    match: ["app/services/**"]
+rules:
+  - id: entry-point
+    require_defines: services
+    any_of: [call, run]
+    because: "a service answers to one of two doors; a class with neither is one nobody can invoke"

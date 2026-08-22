@@ -1,0 +1,11 @@
+components:
+  - name: records
+    ancestor: ApplicationRecord
+  - name: jobs
+    match: ["app/jobs/**"]
+rules:
+  - id: jobs-do-not-touch-records
+    forbid: jobs
+    to: records
+    via: calls
+    because: "a job reaches a record through a service, so the record can change shape without every job changing with it"

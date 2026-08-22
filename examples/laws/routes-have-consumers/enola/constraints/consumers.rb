@@ -1,0 +1,8 @@
+Enola.architecture "shop" do
+  part :api, files: "config/**", kind: :route
+
+  law "every api route has a consumer" do
+    api.must_have_consumer
+    why "a route nobody calls is a surface nobody maintains"
+  end
+end

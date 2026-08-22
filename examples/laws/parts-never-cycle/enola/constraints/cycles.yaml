@@ -1,0 +1,12 @@
+components:
+  - name: jobs
+    match: ["app/jobs/**"]
+  - name: models
+    match: ["app/models/**"]
+  - name: mailers
+    match: ["app/mailers/**"]
+rules:
+  - id: parts-never-cycle
+    forbid_cycles: jobs
+    among: [models, mailers]
+    because: "parts that reach each other in a circle cannot be taken apart"

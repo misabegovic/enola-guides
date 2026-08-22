@@ -22,7 +22,9 @@ thirteen laws in the Ruby DSL, from "jobs never invoke controller code" to
 "billing keeps to its own tables" and "a mutating action is authorized",
 with Prism and Rubydex configured as providers beside the extractors.
 [`examples/ember-app`](examples/ember-app): an Ember application bound to
-the conventions recipe in one block.
+the conventions recipe in one block. [`examples/laws`](examples/laws/README.md):
+twenty-six laws, one directory each, from foreign keys on a tenant column
+to parts that may not cycle, each a complete declaration you copy and run.
 
 ## Guides
 

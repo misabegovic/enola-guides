@@ -1,0 +1,13 @@
+components:
+  - name: model-methods
+    kind: symbol
+    match: ["app/models/**"]
+    where:
+      symbol_kind: method
+
+rules:
+  - id: no-getter-prefixes
+    forbid_name: model-methods
+    pattern: "get_*"
+    surface: exported
+    because: "a reader is a noun; get_ says the class is a bag of fields"

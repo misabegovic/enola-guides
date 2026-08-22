@@ -1,0 +1,11 @@
+components:
+  - name: one-shot-builders
+    kind: symbol
+    match: ["app/services/**"]
+    where:
+      one_shot_call: "Payments::Charge.call"
+
+rules:
+  - id: no-one-shot-charge
+    forbid_fact: one-shot-builders
+    because: "a charge is built and called in one breath, so nobody can hold it to test it"

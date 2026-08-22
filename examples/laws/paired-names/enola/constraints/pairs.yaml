@@ -1,0 +1,11 @@
+components:
+  - name: chat
+    match: ["app/chat/**"]
+    kind: symbol
+    where: { symbol_kind: method }
+rules:
+  - id: paired-scopes
+    require_name: chat
+    pattern: "with_*"
+    requires: "without_*"
+    because: "a reader who finds with_ expects without_ beside it"

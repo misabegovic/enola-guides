@@ -1,0 +1,9 @@
+components:
+  - name: concerns
+    match: ["app/models/concerns/**"]
+    kind: symbol
+    where: { symbol_kind: interface }
+rules:
+  - id: mixins-stay-independent
+    independent: concerns
+    because: "a mixin that knows its includer is half a class in hiding"

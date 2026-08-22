@@ -1,0 +1,13 @@
+components:
+  - name: readers
+    match: ["internal/readers/**"]
+  - name: store
+    match: ["internal/store/**"]
+
+rules:
+  - id: readers-read-the-store-only
+    allow: readers
+    only: [store]
+    via: calls
+    mode: advisory
+    because: "A reader derives its answer from the store alone, which is what keeps every reader replayable against a snapshot; a reader that reaches anything else answers differently on a different machine."

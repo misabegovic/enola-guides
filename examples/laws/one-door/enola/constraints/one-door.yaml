@@ -1,0 +1,18 @@
+components:
+  - name: controllers
+    match: ["app/controllers/**"]
+  - name: schema
+    match: ["app/graphql/**"]
+
+rules:
+  - id: controllers-reach-the-schema-through-one-door
+    forbid: controllers
+    to: schema
+    via: calls
+    mode: advisory
+    exempt:
+      - witness: "Api::GraphqlController#execute -> AppSchema.execute via calls"
+        owner: platform
+        since: "2026-08-22"
+        because: "the one sanctioned entry point"
+    because: "Controllers reach the schema through exactly one door, the execute action; every other controller stays out of it. A second door is a second place to forget authentication."

@@ -1,0 +1,12 @@
+use_recipe:
+  - recipe: rails-strict
+    as: strict
+    bind:
+      controllers: { match: ["app/controllers/**"] }
+      jobs: { match: ["app/jobs/**"] }
+      models: { match: ["app/models/**"] }
+      mailers: { match: ["app/mailers/**"] }
+      policies: { match: ["app/policies/**"] }
+      serializers: { match: ["app/serializers/**"] }
+      view-components: { match: ["app/components/**"] }
+      concerns: { match: ["app/models/concerns/**"], kind: symbol, where: { symbol_kind: interface } }

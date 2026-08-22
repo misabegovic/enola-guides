@@ -1,0 +1,12 @@
+components:
+  - name: tables
+    match: ["db/structure.sql", "db/schema.rb", "app/models/**"]
+    kind: storage
+
+rules:
+  - id: account-fk
+    require: tables
+    when_prop_contains: { prop: columns, value: account_id }
+    must_prop_contain: { prop: fk_constraints, value: "account_id->accounts" }
+    mode: advisory
+    because: "A table carrying account_id references an account, so the database should say so with a foreign key. Advisory while a backfill path that ships the column before the constraint is reconciled with the rule; the verdict names every table that carries the column without the key."

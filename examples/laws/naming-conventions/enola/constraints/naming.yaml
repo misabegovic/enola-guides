@@ -1,0 +1,5 @@
+use_recipe:
+  - recipe: ruby-conventions
+    as: ruby
+    bind:
+      code: { match: ["app/**"], kind: symbol, where: { symbol_kind: method } }

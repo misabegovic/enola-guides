@@ -1,0 +1,8 @@
+use_recipe:
+  - recipe: clean
+    as: clean
+    bind:
+      frameworks: { match: ["app/controllers/**"] }
+      interface-adapters: { match: ["app/adapters/**"] }
+      use-cases: { match: ["app/use_cases/**"] }
+      entities: { match: ["app/entities/**"] }
