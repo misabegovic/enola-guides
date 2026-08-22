@@ -1,0 +1,9 @@
+# Providers run beside enola's own extractors at snapshot time and their
+# facts land in the same graph. Prism needs a Ruby 3.3+ on PATH; Rubydex
+# runs inside the binary after `enola providers fetch rubydex`.
+providers:
+  - name: prism
+    command: ["ruby", "examples/providers/ruby/prism/enola_prism_provider.rb"]
+    expected_version: "0.1.0"
+  - name: rubydex
+    expected_version: "0.4.0"

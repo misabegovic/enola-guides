@@ -1,0 +1,10 @@
+# The Ember conventions bound in one block. The recipe is copied from
+# enola-guides' recipes/ into this repository's enola/recipes/, where the
+# team reviews it; the two optional roles are bound to this app's helpers.
+use_recipe:
+  - recipe: ember-conventions
+    as: app
+    mode: ratchet
+    bind:
+      task-factories: { match: ["app/utils/**"], name_pattern: "*.trackedFunction" }
+      fixture-setup: { match: ["tests/helpers/**"] }
