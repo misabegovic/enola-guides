@@ -1,0 +1,25 @@
+# A cluster: every repository's facts land in one union graph, labelled by
+# repository, and the linker draws the seams between them. Regenerate the
+# whole cluster, never one member; keep the output directory distinct from
+# each member's own .enola/.
+repos:
+  - ../backend
+  - ../mobile
+  - ../admin
+  - .
+
+ignore:
+  - "**/node_modules/**"
+  - "**/vendor/**"
+  - "**/dist/**"
+  - "**/build/**"
+  - "**/tmp/**"
+  - "**/log/**"
+  - "**/coverage/**"
+
+output:
+  dir: .enola-cluster
+
+providers:
+  - name: rubydex
+    expected_version: "0.4.0"

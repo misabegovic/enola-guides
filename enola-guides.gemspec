@@ -12,7 +12,7 @@ Gem::Specification.new do |spec|
   spec.description = <<~TEXT
     Ready-to-use templates, presets, skills and instructions for adopting
     enola, the architecture-graph tool, with Ruby and Rails developers as the
-    primary audience. Ships the recipes under recipes/.
+    primary audience. Ships guides, templates and recipes.
   TEXT
   spec.homepage = "https://github.com/misabegovic/enola-guides"
   spec.license = "Apache-2.0"
@@ -25,6 +25,8 @@ Gem::Specification.new do |spec|
     "LICENSE",
     "README.md",
     "lib/enola-guides.rb",
+    *Dir.glob("guides/**/*"),
+    *Dir.glob("templates/**/*"),
     *Dir.glob("recipes/**/*")
   ]
 end

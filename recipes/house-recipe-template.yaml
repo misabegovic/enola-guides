@@ -1,0 +1,27 @@
+# A house recipe: the conventions your team writes, with the selectors your
+# tree needs as role defaults, so enola/constraints/ binds it in one line.
+# Copy to enola/recipes/<name>.yaml, rename, and replace every law with one
+# of yours. A recipe with the same name as a shipped one replaces it.
+recipe: house-conventions
+roles:
+  - name: services
+    match: ["app/services/**"]
+  - name: entry-points
+    kind: symbol
+    match: ["app/services/**"]
+    name_pattern: "*#call"
+  - name: helpers
+    optional: true
+rules:
+  - id: services-answer-to-call
+    require_defines: services
+    method: call
+    mode: ratchet
+    because: "A service has one door, so a caller never has to read it to find the verb."
+
+  - id: services-keep-off-helpers
+    forbid: services
+    to: helpers
+    via: calls
+    mode: ratchet
+    because: "A helper is view code; a service that reaches one can no longer run off the request."
