@@ -74,7 +74,7 @@ your agent's skills folder; the hooks they pair with are under
 ## Templates and recipes
 
 [`templates/`](templates): the CI check script and its comment renderer,
-a cluster configuration, a constraints starter. [`recipes/`](recipes/README.md):
+a cluster configuration, a constraints starter. [`recipes/`](recipes/README.md) (the catalogue munola binds, each recipe with the number its laws held at):
 recipes a repository copies into its own `enola/recipes/` and binds in one
 line, starting with the Ember conventions and a house-recipe template;
 starting points the team reviews, never defaults the tool applies.

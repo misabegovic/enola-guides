@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.0 (2026-08-23)
+
+The recipe catalogue munola binds: `data-ownership`, `api-boundaries`,
+`background-work` and the `tenant-foreign-key` template beside
+`ember-conventions`, each law an existing enola form with the number it held
+at on a real monolith in the catalogue table; every file lints clean bound
+to a Rails tree.
+
 ## 0.2.1 (2026-08-23)
 
 enola v0.4.4 released the constraints program the guides describe
