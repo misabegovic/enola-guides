@@ -40,11 +40,13 @@ breach. Start with ratchet.
 
 ## The recipes
 
-The catalogue the wrappers write into a project's `enola/recipes/` from
-this gem's files (`enola recipes install`, the Rails generator, `munola
-init`); a recipe binds when its roles resolve. The upstream built-ins
-(`rails-conventions`, `rails-strict`, `vanilla-rails` and the six
-arrangements) are also shipped inside the enola binary itself. Each law is
+The catalogue munola ships built in: `munola init` writes these recipes
+into a project's `enola/recipes/` and binds those whose roles resolve,
+and the munola binary embeds the parameter-free ones, generated from
+these files at release. The `enola` and `enola-rb` gems carry upstream's
+own built-ins only (`rails-conventions`, `rails-strict`, `vanilla-rails`
+and the six arrangements); a team on those channels copies a file from
+here by hand. Each law is
 an existing enola form; each recipe is here because its laws held on a real
 Rails monolith at a number a team can act on, given beside it.
 

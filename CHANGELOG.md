@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.1 (2026-08-23)
+
+The recipes README says where the catalogue ships: built into munola,
+written by `munola init`; the upstream channels carry upstream's built-ins
+only.
+
 ## 0.3.0 (2026-08-23)
 
 The recipe catalogue munola binds: `data-ownership`, `api-boundaries`,
