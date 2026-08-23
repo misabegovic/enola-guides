@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.1 (2026-08-23)
+
+enola v0.4.4 released the constraints program the guides describe
+(enola-labs/enola#247 merged); the README says released rather than landing,
+and the install guide names v0.4.4 as the minimum.
+
 ## 0.2.0 (2026-08-22)
 
 What a knowledge base gets. Four guides (a knowledge base with enola,

@@ -10,9 +10,9 @@ invisible to tools that look at one file at a time, and they are what enola
 reports.
 
 This guide takes you from nothing to a graded change. Everything here is
-written for the release that carries the constraints vocabulary (the one
-this repository's recipes and templates target); if your `enola --version`
-is older, upgrade first.
+written for enola v0.4.4 or later, the release that carries the constraints
+vocabulary this repository's recipes and templates target; if your
+`enola --version` is older, upgrade first.
 
 ## 1. Install
 

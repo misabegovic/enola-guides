@@ -1,7 +1,7 @@
 # enola-guides
 
-How to use what is landing in [enola](https://github.com/enola-labs/enola)
-([enola-labs/enola#247](https://github.com/enola-labs/enola/pull/247)): a
+How to use what [enola](https://github.com/enola-labs/enola) ships since
+v0.4.4 ([enola-labs/enola#247](https://github.com/enola-labs/enola/pull/247)): a
 Ruby DSL for writing architecture constraints, Prism and Rubydex as
 providers that run together with enola's own extractors, recipes a team
 reviews, laws that read the whole graph, and an MCP your agent uses during
