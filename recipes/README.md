@@ -40,20 +40,24 @@ breach. Start with ratchet.
 
 ## The recipes
 
-The catalogue munola binds with one command. Each law is an existing enola
-form; each recipe is here because its laws held on a real Rails monolith at
-a number a team can act on, given beside it.
+The catalogue the wrappers write into a project's `enola/recipes/` from
+this gem's files (`enola recipes install`, the Rails generator, `munola
+init`); a recipe binds when its roles resolve. The upstream built-ins
+(`rails-conventions`, `rails-strict`, `vanilla-rails` and the six
+arrangements) are also shipped inside the enola binary itself. Each law is
+an existing enola form; each recipe is here because its laws held on a real
+Rails monolith at a number a team can act on, given beside it.
 
-| Recipe | States | Held at | Placement |
-|---|---|---|---|
-| `rails-conventions` (upstream) | jobs, models, serializers and components never render; policies and mailers never enqueue; request API stays in controllers | five of seven laws with zero exceptions, three advisory at 134 crossings | embedded in enola |
-| `rails-strict` (upstream) | the above plus no cycles among the Rails roles and independent concerns | 0 of 127 concerns breach | embedded in enola |
-| `vanilla-rails` (upstream) | the directories the vanilla arrangement leaves empty stay empty | an arrangement a team chooses | embedded in enola |
-| `ember-conventions.yaml` | nine Ember conventions selected by what the code carries | the neutral eight hold; the house ones stay out | embedded in munola |
-| `data-ownership.yaml` | readers read the store only | advisory; bind your query objects | embedded in munola |
-| `api-boundaries.yaml` | the public API is reached only by controllers; a mutating action reaches a policy | 736 unauthorized mutations reported, advisory | embedded in munola |
-| `background-work.yaml` | maintenance tasks live in their namespace and never reach controllers | 0 of 3,250 task call edges reach a controller | embedded in munola |
-| `tenant-foreign-key.yaml` | a table carrying the tenant column carries the foreign key | 3,720 declared, 0 new | written by munola with the column filled in |
+| Recipe | States | Held at |
+|---|---|---|
+| `rails-conventions` (upstream) | jobs, models, serializers and components never render; policies and mailers never enqueue; request API stays in controllers | five of seven laws with zero exceptions, three advisory at 134 crossings |
+| `rails-strict` (upstream) | the above plus no cycles among the Rails roles and independent concerns | 0 of 127 concerns breach |
+| `vanilla-rails` (upstream) | the directories the vanilla arrangement leaves empty stay empty | an arrangement a team chooses |
+| `ember-conventions.yaml` | nine Ember conventions selected by what the code carries | the neutral eight hold; the house ones stay out |
+| `data-ownership.yaml` | readers read the store only | advisory; bind your query objects |
+| `api-boundaries.yaml` | the public API is reached only by controllers; a mutating action reaches a policy | 736 unauthorized mutations reported, advisory |
+| `background-work.yaml` | maintenance tasks live in their namespace and never reach controllers | 0 of 3,250 task call edges reach a controller |
+| `tenant-foreign-key.yaml` | a table carrying the tenant column carries the foreign key | 3,720 declared, 0 new |
 
 Two data-ownership laws, one owner per table and storage stays home, are
 declarations rather than recipe rules for now: they live as worked examples
