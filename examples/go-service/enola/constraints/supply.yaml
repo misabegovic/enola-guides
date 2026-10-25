@@ -1,0 +1,7 @@
+# Every direct dependency pinned, or resolved by a lockfile enola reads.
+use_recipe:
+  - recipe: supply-chain
+    as: supply
+    mode: ratchet
+    bind:
+      unpinned-dependencies: {}

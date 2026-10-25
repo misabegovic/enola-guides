@@ -1,0 +1,14 @@
+# layered's domain rules read depends_on, an edge the Rust extractor does
+# not write; a use is the edge a domain module crosses to reach storage.
+components:
+  - name: domain
+    match: ["src/order/**"]
+  - name: storage
+    match: ["src/store/**"]
+rules:
+  - id: the-domain-imports-no-storage
+    forbid: domain
+    to: storage
+    via: imports
+    mode: ratchet
+    because: "The domain is the part that outlives the database; a domain module that uses the store cannot be tested or reasoned about without it."

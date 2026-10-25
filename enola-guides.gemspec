@@ -8,11 +8,12 @@ Gem::Specification.new do |spec|
   spec.authors = ["Muhamed Isabegovic"]
   spec.email = ["m.isabegovic@hotmail.com"]
 
-  spec.summary = "Guides, presets and onboarding material for enola, Rubyists first."
+  spec.summary = "Guides, worked examples, skills and templates for enola, tabula and taha."
   spec.description = <<~TEXT
-    Ready-to-use templates, presets, skills and instructions for adopting
-    enola, the architecture-graph tool, with Ruby and Rails developers as the
-    primary audience. Ships guides, worked examples, agent skills, templates and recipes.
+    How to adopt enola, the tool that grades what a change did to a codebase's
+    architecture: guides for Rails, Ember, Python, TypeScript, Go and Rust,
+    worked examples, agent skills, CI templates and recipes, and the
+    knowledge base built on it with tabula and taha.
   TEXT
   spec.homepage = "https://github.com/misabegovic/enola-guides"
   spec.license = "Apache-2.0"

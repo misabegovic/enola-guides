@@ -20,7 +20,7 @@ lint() {
   fi
 }
 
-for dir in examples/rails-shop examples/ember-app examples/knowledge-base examples/laws/*/; do
+for dir in examples/rails-shop examples/ember-app examples/knowledge-base examples/*-service/ examples/laws/*/; do
   lint "${dir%/}"
 done
 

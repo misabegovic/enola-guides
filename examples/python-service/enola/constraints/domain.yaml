@@ -1,0 +1,14 @@
+# layered's domain rules read depends_on, an edge Python's extractor does
+# not write; an import is the edge a Python domain crosses to reach storage.
+components:
+  - name: domain
+    match: ["shop/domain/**"]
+  - name: storage
+    match: ["shop/repositories/**"]
+rules:
+  - id: the-domain-imports-no-storage
+    forbid: domain
+    to: storage
+    via: imports
+    mode: ratchet
+    because: "The domain is the part that outlives the database; a domain that imports a table cannot be tested or reasoned about without it."

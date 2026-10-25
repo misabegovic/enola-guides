@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.7.0 (2026-10-25)
+
+Python, TypeScript, Go and Rust. Guides 15 to 18 and a worked example in
+each language: the same four-layer service with its source, binding the
+`layered` and `supply-chain` recipes and breaking its laws on purpose.
+`script/test-examples` snapshots every example with the pinned enola and
+fails when the laws reporting a breach are not exactly the ones its
+`EXPECTED` file lists. What the examples showed on v0.4.34, each said
+where it bites:
+
+- `layered`'s two domain rules read `depends_on`, which none of the four
+  extractors writes, so each example states the domain's law over
+  `imports`.
+- A TypeScript handler written inline puts its calls on the file, where
+  the edge rules do not walk; a named handler is walked.
+- An Express `router.post("/")` under a mount produces no route.
+- An Axum router nested inline keeps its bare paths.
+- A Cargo version with no operator counts as pinned.
+
+Guide 01 states its first law in YAML as well as Ruby, and the README
+no longer reads as Rubyists first.
+
 ## 0.6.0 (2026-10-25)
 
 tabula and taha. Guide 13 is tabula for an enola user: a release that
