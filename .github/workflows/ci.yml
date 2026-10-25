@@ -18,6 +18,15 @@ jobs:
           persist-credentials: false
       - run: script/lint-examples
 
+  example-laws:
+    name: Each worked example breaks exactly the laws it says
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - run: script/test-examples
+
   check-template:
     name: The check template grades a fixture end to end
     runs-on: ubuntu-latest

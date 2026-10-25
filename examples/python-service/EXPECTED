@@ -1,0 +1,6 @@
+# The laws this example breaks on purpose, one rule id per line. CI
+# snapshots the example with the pinned enola and fails when the set of
+# laws reporting a breach differs from this list.
+shop/presentation-reaches-application-only
+the-domain-imports-no-storage
+supply/dependencies-are-pinned

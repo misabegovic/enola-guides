@@ -127,6 +127,24 @@ Enola.architecture "shop" do
 end
 ```
 
+The same law in YAML, the form every language's team can write:
+
+```yaml
+# enola/constraints/jobs.yaml
+components:
+  - name: jobs
+    match: ["app/jobs/**"]
+  - name: controllers
+    match: ["app/controllers/**"]
+rules:
+  - id: background-jobs-never-invoke-controller-code
+    forbid: jobs
+    to: controllers
+    via: calls
+    mode: ratchet
+    because: "rendering from a job goes through ApplicationController.renderer"
+```
+
 `ratchet` reports what already breaks the law and fails only what a
 change adds, which is the mode to start every law in. The [writing laws
 guide](04-writing-laws.md) has the whole vocabulary.
@@ -136,6 +154,8 @@ guide](04-writing-laws.md) has the whole vocabulary.
 - [A Rails application](02-rails.md): what enola measures in one, the
   providers that sharpen it, the recipe that names its parts.
 - [An Ember application](03-ember.md): the same for the front end.
+- [Python](15-python.md), [TypeScript](16-typescript.md), [Go](17-go.md),
+  [Rust](18-rust.md): the same for a service in each.
 - [Constraints in CI](05-constraints-in-ci.md): the check step, with a
   template you copy.
 - [Beyond one repository](08-beyond-one-repo.md): the cluster, and the laws

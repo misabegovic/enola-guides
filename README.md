@@ -1,15 +1,14 @@
 # enola-guides
 
-How to use what [enola](https://github.com/enola-labs/enola) ships since
-v0.4.4 ([enola-labs/enola#247](https://github.com/enola-labs/enola/pull/247)),
-checked against v0.4.34: a
-Ruby DSL for writing architecture constraints, Prism and Rubydex as
-providers that run together with enola's own extractors, recipes a team
-reviews, laws that read the whole graph, and an MCP your agent uses during
-a session. Guides, worked examples, skills and templates, packaged as a
-gem so a team can pin the guidance it adopted. Rubyists first; consumed by
-[enola-rb](https://github.com/misabegovic/enola-rb), the gem that runs
-enola. Expanding as the practice does.
+How to use [enola](https://github.com/enola-labs/enola), the tool that
+grades what a change did to a codebase's architecture, checked against
+v0.4.34: laws written as sentences in Ruby or YAML, recipes a team
+reviews, providers that run beside enola's own extractors, the check in
+CI, the hooks and MCP tools an agent uses during a session, and the
+knowledge base built on top of it with [tabula](guides/13-tabula.md) and
+[taha](guides/14-taha.md). Guides for Rails, Ember, Python, TypeScript,
+Go and Rust, worked examples that CI snapshots and grades on every change,
+skills and templates, packaged so a team can pin the guidance it adopted.
 
 ```bash
 gem install enola-guides
@@ -25,7 +24,12 @@ with Prism and Rubydex configured as providers beside the extractors.
 [`examples/ember-app`](examples/ember-app): an Ember application bound to
 the conventions recipe in one block. [`examples/knowledge-base`](examples/knowledge-base/README.md):
 two pages anchored to code, a cluster config, receipts and a finding ledger,
-the smallest knowledge base the skills and hooks run against. [`examples/laws`](examples/laws/README.md):
+the smallest knowledge base the skills and hooks run against. [`examples/python-service`](examples/python-service),
+[`examples/typescript-service`](examples/typescript-service),
+[`examples/go-service`](examples/go-service) and
+[`examples/rust-service`](examples/rust-service): the same four-layer
+service in each language, with its source, breaking the laws it states on
+purpose so you can watch each one fire. [`examples/laws`](examples/laws/README.md):
 twenty-six laws, one directory each, from foreign keys on a tenant column
 to parts that may not cycle, each a complete declaration you copy and run.
 
@@ -63,6 +67,13 @@ to parts that may not cycle, each a complete declaration you copy and run.
 14. [taha](guides/14-taha.md): agents run on a tabula project under a
     mandate, gated by tabula's verdicts, asking before anything is
     published.
+15. [A Python service](guides/15-python.md),
+16. [a TypeScript or JavaScript service](guides/16-typescript.md),
+17. [a Go service](guides/17-go.md), and
+18. [a Rust service](guides/18-rust.md): what enola measures in each
+    language, the `layered` recipe bound to a service, the law over
+    `imports` its domain rules need, dependencies, and where v0.4.34 reads
+    less than the code says.
 
 ## Skills
 

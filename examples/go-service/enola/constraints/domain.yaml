@@ -1,0 +1,14 @@
+# layered's domain rules read depends_on, an edge the Go extractor does
+# not write; an import is the edge a domain package crosses to reach storage.
+components:
+  - name: domain
+    match: ["internal/order/**"]
+  - name: storage
+    match: ["internal/store/**"]
+rules:
+  - id: the-domain-imports-no-storage
+    forbid: domain
+    to: storage
+    via: imports
+    mode: ratchet
+    because: "The domain is the part that outlives the database; a domain package that imports the store cannot be tested or reasoned about without it."

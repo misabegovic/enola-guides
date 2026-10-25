@@ -1,0 +1,14 @@
+# layered's domain rules read depends_on, an edge the TypeScript extractor
+# does not write; an import is the edge a domain crosses to reach storage.
+components:
+  - name: domain
+    match: ["src/domain/**"]
+  - name: storage
+    match: ["src/db/**"]
+rules:
+  - id: the-domain-imports-no-storage
+    forbid: domain
+    to: storage
+    via: imports
+    mode: ratchet
+    because: "The domain is the part that outlives the database; a domain that imports a schema cannot be tested or reasoned about without it."

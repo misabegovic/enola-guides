@@ -1,0 +1,40 @@
+#!/bin/bash
+# Snapshots every example that carries source and an EXPECTED file with the
+# pinned enola, and fails when the laws reporting a breach are not exactly
+# the ones EXPECTED lists. A law that stops firing and a law that starts are
+# both a change a reader of the example must hear about.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+enola="${ENOLA:-$(script/fetch-enola)}"
+work=$(mktemp -d)
+trap 'rm -rf "$work"' EXIT
+export HOME="$work/home"
+mkdir -p "$HOME"
+
+failed=0
+for expected in examples/*/EXPECTED; do
+  dir=$(dirname "$expected")
+  copy="$work/$(basename "$dir")"
+  cp -r "$dir" "$copy"
+  (cd "$copy" && git init -q && "$enola" --generate --no-dashboard . >/dev/null 2>&1)
+  got=$(python3 - "$copy/.enola/insights.json" <<'PY'
+import json, re, sys
+ids = set()
+for insight in json.load(open(sys.argv[1])):
+    match = re.match(r"Constraint (\S+) violated", insight.get("title") or "")
+    if insight.get("source") == "constraints" and match:
+        ids.add(match.group(1))
+print("\n".join(sorted(ids)))
+PY
+)
+  want=$(grep -v '^#' "$expected" | sed '/^$/d' | sort)
+  if [ "$got" = "$want" ]; then
+    echo "ok    $dir: $(echo "$want" | tr '\n' ' ')"
+  else
+    echo "FAIL  $dir"
+    diff <(echo "$want") <(echo "$got") | sed 's/^</      expected but silent:/; s/^>/      reported, not expected:/' | grep -v '^---\|^[0-9]'
+    failed=1
+  fi
+done
+exit "$failed"

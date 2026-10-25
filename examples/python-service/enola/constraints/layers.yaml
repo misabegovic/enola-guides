@@ -1,0 +1,10 @@
+# The four layers of a service, bound to the packages that hold them.
+use_recipe:
+  - recipe: layered
+    as: shop
+    mode: ratchet
+    bind:
+      presentation: { match: ["shop/api/**"] }
+      application: { match: ["shop/services/**"] }
+      domain: { match: ["shop/domain/**"] }
+      infrastructure: { match: ["shop/repositories/**"] }

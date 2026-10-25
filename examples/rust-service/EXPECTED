@@ -1,0 +1,7 @@
+# The laws this example breaks on purpose, one rule id per line. CI
+# snapshots the example with the pinned enola and fails when the set of
+# laws reporting a breach differs from this list.
+shop/presentation-reaches-application-only
+the-domain-imports-no-storage
+# Not supply/dependencies-are-pinned, though axum = "0.7" is a caret range:
+# enola v0.4.34 reads a Cargo version with no operator as pinned.

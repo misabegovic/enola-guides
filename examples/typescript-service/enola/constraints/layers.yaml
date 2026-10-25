@@ -1,0 +1,10 @@
+# The four layers of a service, bound to the directories that hold them.
+use_recipe:
+  - recipe: layered
+    as: shop
+    mode: ratchet
+    bind:
+      presentation: { match: ["src/routes/**"] }
+      application: { match: ["src/services/**"] }
+      domain: { match: ["src/domain/**"] }
+      infrastructure: { match: ["src/db/**"] }
