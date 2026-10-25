@@ -35,7 +35,7 @@ jobs:
         run: |
           uv venv /tmp/venv && uv pip install --python /tmp/venv/bin/python build
           PYTHON=/tmp/venv/bin/python script/build-packages
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: dist
           path: dist/
