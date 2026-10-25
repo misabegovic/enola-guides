@@ -77,7 +77,7 @@ jobs:
           sed -e "s/{version}/$(cat VERSION)/" -e "s/{sha256}/$sha/" \
               -e 's|url "https://github.com/misabegovic/enola-guides/archive/refs/tags/v.*\.tar\.gz"|url "file:///tmp/enola-guides.tar.gz"\n  version "'"$(cat VERSION)"'"|' \
               packaging/homebrew/enola-guides.rb.in > "$(brew --repository local/test)/Formula/enola-guides.rb"
-          HOMEBREW_NO_INSTALL_FROM_API=1 brew install --build-from-source local/test/enola-guides
+          brew install --build-from-source local/test/enola-guides
           brew test local/test/enola-guides
 
   example-laws:
