@@ -1,0 +1,8 @@
+$ enola-guides copy nope
+exit 2
+--- stdout
+
+--- stderr
+enola-guides: no item nope; enola-guides list names them
+
+--- files

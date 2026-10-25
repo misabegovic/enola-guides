@@ -1,0 +1,25 @@
+# One case per line: the arguments of one run, or several runs separated
+# by " ; " that share one working directory. Each case starts in an empty
+# directory. A word is split on spaces; no quoting.
+(none)
+help
+--help
+version
+--version
+list
+list laws
+list template
+list nope
+show guides/01-start-here
+show skills/enola
+show nope/x
+show
+copy laws/foreign-keys
+copy hooks/record ; copy hooks/record
+copy skills/enola agents/skills
+copy skills/enola agents/skills/
+copy examples/go-service
+copy templates/enola-check
+copy
+copy nope
+frobnicate

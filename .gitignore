@@ -2,3 +2,12 @@
 pkg/
 .enola/
 .enola-*/
+dist/
+# Copied in by script/build-packages from bundle/, LICENSE and NOTICE.
+packages/*/bundle.json
+packages/*/LICENSE
+packages/*/NOTICE
+packages/python/src/enola_guides/bundle.json
+packages/rust/target/
+packages/rust/Cargo.lock
+__pycache__/

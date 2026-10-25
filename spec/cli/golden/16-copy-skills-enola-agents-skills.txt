@@ -1,0 +1,9 @@
+$ enola-guides copy skills/enola agents/skills
+exit 0
+--- stdout
+wrote agents/skills/enola/SKILL.md
+
+--- stderr
+
+--- files
+agents/skills/enola/SKILL.md 644 a0ea16d06fa57761

@@ -1,0 +1,8 @@
+$ enola-guides list nope
+exit 2
+--- stdout
+
+--- stderr
+enola-guides: no kind nope; the kinds are guide, example, law, skill, hook, recipe, template
+
+--- files

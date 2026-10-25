@@ -10,10 +10,36 @@ knowledge base built on top of it with [tabula](guides/13-tabula.md) and
 Go and Rust, worked examples that CI snapshots and grades on every change,
 skills and templates, packaged so a team can pin the guidance it adopted.
 
+## Install
+
+One command, `enola-guides`, with the same items and the same output from
+every package. Take it from the ecosystem you already use:
+
 ```bash
-gem install enola-guides
-gem contents enola-guides
+gem install enola-guides                                         # RubyGems
+npm install -g enola-guides                                      # npm
+pipx install enola-guides                                        # PyPI (or uv tool install)
+cargo install enola-guides                                       # crates.io
+go install github.com/misabegovic/enola-guides/cmd/enola-guides@latest
+brew install misabegovic/tap/enola-guides                        # Homebrew
 ```
+
+or a binary for Linux, macOS or Windows from the
+[releases](https://github.com/misabegovic/enola-guides/releases). Then:
+
+```bash
+enola-guides list                    # every item; list guides, list laws, list skills, ...
+enola-guides show guides/01-start-here
+enola-guides copy laws/foreign-keys  # writes enola/constraints/foreign-keys.yaml
+enola-guides copy skills/enola       # writes .claude/skills/enola/SKILL.md
+```
+
+`copy` writes an item's files under a directory each kind has a default
+for (`enola/constraints` for a law, `.claude/skills` for a skill,
+`enola/recipes` for a recipe) or the one you name, and never overwrites:
+it names the first file that exists and writes nothing. The gem also
+carries the tree itself, so `gem contents enola-guides` lists every file
+and a team can pin the guidance it adopted in its `Gemfile`.
 
 ## Start with an example
 

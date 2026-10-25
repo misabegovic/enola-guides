@@ -1,0 +1,31 @@
+$ enola-guides copy examples/go-service
+exit 0
+--- stdout
+wrote go-service/EXPECTED
+wrote go-service/README.md
+wrote go-service/cmd/shop/main.go
+wrote go-service/enola/constraints/domain.yaml
+wrote go-service/enola/constraints/layers.yaml
+wrote go-service/enola/constraints/supply.yaml
+wrote go-service/go.mod
+wrote go-service/internal/checkout/checkout.go
+wrote go-service/internal/order/order.go
+wrote go-service/internal/order/pricing.go
+wrote go-service/internal/store/store.go
+wrote go-service/internal/web/routes.go
+
+--- stderr
+
+--- files
+go-service/EXPECTED 644 44c19da75434e21f
+go-service/README.md 644 9abf9dfde4898dd4
+go-service/cmd/shop/main.go 644 fbdb7a056e92a6ff
+go-service/enola/constraints/domain.yaml 644 396d5990abe33799
+go-service/enola/constraints/layers.yaml 644 9688c12ae8aaf5c8
+go-service/enola/constraints/supply.yaml 644 6070b274d89879a7
+go-service/go.mod 644 874e44b70dc81a70
+go-service/internal/checkout/checkout.go 644 61c737273d2d3753
+go-service/internal/order/order.go 644 75fe899b9ecec79f
+go-service/internal/order/pricing.go 644 ed075274e05f0a08
+go-service/internal/store/store.go 644 1a3e61adce154ac6
+go-service/internal/web/routes.go 644 5b7bcb024e3f7680

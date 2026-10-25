@@ -21,11 +21,20 @@ Gem::Specification.new do |spec|
 
   spec.metadata["source_code_uri"] = spec.homepage
   spec.metadata["changelog_uri"] = "#{spec.homepage}/blob/main/CHANGELOG.md"
+  spec.metadata["bug_tracker_uri"] = "#{spec.homepage}/issues"
+  spec.metadata["rubygems_mfa_required"] = "true"
+
+  spec.bindir = "exe"
+  spec.executables = ["enola-guides"]
 
   spec.files = [
     "LICENSE",
+    "NOTICE",
     "README.md",
     "lib/enola-guides.rb",
+    "lib/enola-guides/cli.rb",
+    "exe/enola-guides",
+    "bundle/bundle.json",
     "CHANGELOG.md",
     *Dir.glob("guides/**/*"),
     *Dir.glob("examples/**/*"),

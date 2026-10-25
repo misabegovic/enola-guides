@@ -1,0 +1,94 @@
+#!/usr/bin/env python3
+"""Runs each enola-guides implementation through spec/cli/cases and compares
+its stdout, stderr, exit code and the files it wrote with spec/cli/golden/.
+
+  script/test-clis go=/tmp/enola-guides node="node packages/npm/bin/enola-guides.js"
+  script/test-clis --update go=/tmp/enola-guides
+
+Each argument names an implementation and the command that runs it. With
+--update the first implementation's results become the goldens. A golden
+records the version as {version}, so a release does not rewrite them.
+"""
+import hashlib
+import json
+import os
+import pathlib
+import shlex
+import subprocess
+import sys
+import tempfile
+
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+SPEC = ROOT / "spec" / "cli"
+VERSION = (ROOT / "VERSION").read_text().strip()
+
+
+def cases():
+    lines = [l.strip() for l in (SPEC / "cases").read_text().splitlines() if l.strip() and not l.startswith("#")]
+    return list(enumerate(lines, 1))
+
+
+def slug(number, case):
+    keep = "".join(ch if ch.isalnum() else "-" for ch in case)
+    return f"{number:02d}-" + ("-".join(part for part in keep.split("-") if part) or "none")
+
+
+def listing(directory):
+    lines = []
+    for path in sorted(p for p in directory.rglob("*") if p.is_file()):
+        mode = oct(path.stat().st_mode & 0o777)[2:]
+        digest = hashlib.sha256(path.read_bytes()).hexdigest()[:16]
+        lines.append(f"{path.relative_to(directory).as_posix()} {mode} {digest}")
+    return lines
+
+
+def run_case(command, case):
+    with tempfile.TemporaryDirectory() as work:
+        out = []
+        for runs in case.split(" ; "):
+            args = [] if runs == "(none)" else runs.split(" ")
+            done = subprocess.run(command + args, cwd=work, capture_output=True, text=True)
+            out += [f"$ enola-guides {runs}".rstrip(), f"exit {done.returncode}", "--- stdout", done.stdout, "--- stderr", done.stderr]
+        out += ["--- files", *listing(pathlib.Path(work))]
+        return "\n".join(out).replace(VERSION, "{version}") + "\n"
+
+
+def main(argv):
+    update = argv[:1] == ["--update"]
+    impls = [a.split("=", 1) for a in (argv[1:] if update else argv)]
+    if not impls:
+        print(__doc__, file=sys.stderr)
+        return 2
+    golden = SPEC / "golden"
+    if update:
+        golden.mkdir(exist_ok=True)
+        for old in golden.glob("*.txt"):
+            old.unlink()
+        name, command = impls[0]
+        for number, case in cases():
+            (golden / f"{slug(number, case)}.txt").write_text(run_case(shlex.split(command), case))
+        print(f"wrote {len(cases())} goldens from {name}")
+        return 0
+    failed = 0
+    for name, command in impls:
+        bad = []
+        for number, case in cases():
+            want = (golden / f"{slug(number, case)}.txt").read_text()
+            got = run_case(shlex.split(command), case)
+            if got != want:
+                bad.append((case, want, got))
+        if bad:
+            failed = 1
+            print(f"FAIL  {name}: {len(bad)} of {len(cases())} cases differ")
+            for case, want, got in bad[:3]:
+                import difflib
+                diff = difflib.unified_diff(want.splitlines(), got.splitlines(), "golden", name, lineterm="", n=1)
+                print(f"  case: {case}")
+                print("    " + "\n    ".join(list(diff)[:20]))
+        else:
+            print(f"ok    {name}: {len(cases())} cases")
+    return failed
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

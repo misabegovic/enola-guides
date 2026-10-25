@@ -1,0 +1,8 @@
+$ enola-guides version
+exit 0
+--- stdout
+enola-guides {version}
+
+--- stderr
+
+--- files

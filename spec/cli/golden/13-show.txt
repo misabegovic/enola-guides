@@ -1,0 +1,8 @@
+$ enola-guides show
+exit 2
+--- stdout
+
+--- stderr
+enola-guides: show needs an item id; enola-guides list names them
+
+--- files

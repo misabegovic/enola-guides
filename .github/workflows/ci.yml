@@ -18,6 +18,68 @@ jobs:
           persist-credentials: false
       - run: script/lint-examples
 
+  clis:
+    name: Every package's command gives the same output
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v6
+        with:
+          go-version: stable
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+      - uses: astral-sh/setup-uv@v6
+      - run: script/bundle --check
+      - run: script/sync-version --check
+      - run: go vet ./... && test -z "$(gofmt -l cmd bundle)"
+      - name: Build every package
+        run: |
+          uv venv /tmp/venv && uv pip install --python /tmp/venv/bin/python build
+          PYTHON=/tmp/venv/bin/python script/build-packages
+      - name: Install each package and run the shared cases
+        run: |
+          set -euo pipefail
+          w=$(mktemp -d)
+          v=$(cat VERSION)
+          GEM_HOME=$w/gem gem install --local --no-document dist/enola-guides-$v.gem
+          npm install -g --prefix $w/npm ./dist/enola-guides-$v.tgz
+          uv venv $w/py && uv pip install --python $w/py/bin/python dist/enola_guides-$v-py3-none-any.whl
+          mkdir $w/crate && tar -xzf dist/enola-guides-$v.crate -C $w/crate
+          (cd $w/crate/enola-guides-$v && cargo build --release --locked)
+          mkdir $w/go && tar -xzf dist/enola-guides-$v-linux-amd64.tar.gz -C $w/go
+          script/test-clis \
+            gem="env GEM_HOME=$w/gem $w/gem/bin/enola-guides" \
+            npm="$w/npm/bin/enola-guides" \
+            pypi="$w/py/bin/enola-guides" \
+            crate="$w/crate/enola-guides-$v/target/release/enola-guides" \
+            go="$w/go/enola-guides-$v-linux-amd64/enola-guides"
+
+  homebrew:
+    name: The Homebrew formula builds and passes its test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Install the formula from a local tap, built from this checkout
+        run: |
+          set -euo pipefail
+          eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+          git archive --format=tar.gz --prefix=enola-guides/ -o /tmp/enola-guides.tar.gz HEAD
+          sha=$(sha256sum /tmp/enola-guides.tar.gz | cut -d ' ' -f 1)
+          brew tap-new --no-git local/test
+          sed -e "s/@VERSION@/$(cat VERSION)/" -e "s/@SHA256@/$sha/" \
+              -e 's|url "https://github.com/misabegovic/enola-guides/archive/refs/tags/v.*\.tar\.gz"|url "file:///tmp/enola-guides.tar.gz"\n  version "'"$(cat VERSION)"'"|' \
+              packaging/homebrew/enola-guides.rb.in > "$(brew --repository local/test)/Formula/enola-guides.rb"
+          brew install --build-from-source local/test/enola-guides
+          brew test local/test/enola-guides
+
   example-laws:
     name: Each worked example breaks exactly the laws it says
     runs-on: ubuntu-latest

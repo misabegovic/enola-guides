@@ -1,0 +1,8 @@
+$ enola-guides show nope/x
+exit 2
+--- stdout
+
+--- stderr
+enola-guides: no item nope/x; enola-guides list names them
+
+--- files

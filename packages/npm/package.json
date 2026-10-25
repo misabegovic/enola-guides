@@ -1,0 +1,22 @@
+{
+  "name": "enola-guides",
+  "version": "0.8.0",
+  "description": "The enola guides, examples, laws, skills, hooks, recipes and templates, listed, shown and copied from one command",
+  "license": "Apache-2.0",
+  "author": "Muhamed Isabegovic",
+  "homepage": "https://github.com/misabegovic/enola-guides",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/misabegovic/enola-guides.git",
+    "directory": "packages/npm"
+  },
+  "bugs": "https://github.com/misabegovic/enola-guides/issues",
+  "keywords": ["architecture", "enola", "constraints", "guides", "cli"],
+  "bin": {
+    "enola-guides": "bin/enola-guides.js"
+  },
+  "files": ["bin/", "bundle.json", "README.md", "LICENSE", "NOTICE"],
+  "engines": {
+    "node": ">=18"
+  }
+}

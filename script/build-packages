@@ -1,0 +1,39 @@
+#!/bin/bash
+# Builds every package into dist/ from this checkout: the gem, the npm
+# tarball, the Python wheel and sdist, the Rust crate, and the Go binaries
+# the GitHub release carries. Each package gets the bundle, LICENSE and
+# NOTICE copied in first; nothing is published.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+script/bundle --check
+script/sync-version --check
+version=$(cat VERSION)
+rm -rf dist && mkdir -p dist
+
+for dir in packages/npm packages/python packages/rust; do
+  cp LICENSE NOTICE "$dir/"
+done
+cp bundle/bundle.json packages/npm/bundle.json
+cp bundle/bundle.json packages/python/src/enola_guides/bundle.json
+cp bundle/bundle.json packages/rust/bundle.json
+
+gem build enola-guides.gemspec -o "dist/enola-guides-${version}.gem" >/dev/null
+(cd packages/npm && npm pack --silent --pack-destination ../../dist >/dev/null)
+"${PYTHON:-python3}" -m build --outdir dist packages/python >/dev/null
+(cd packages/rust && cargo package --quiet --allow-dirty --no-verify --target-dir target && cp "target/package/enola-guides-${version}.crate" ../../dist/)
+
+for target in linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64; do
+  os=${target%/*}
+  arch=${target#*/}
+  name="enola-guides-${version}-${os}-${arch}"
+  ext=""
+  [ "$os" = windows ] && ext=.exe
+  mkdir -p "dist/$name"
+  CGO_ENABLED=0 GOOS=$os GOARCH=$arch go build -trimpath -ldflags "-s -w" -o "dist/$name/enola-guides$ext" ./cmd/enola-guides
+  cp LICENSE NOTICE README.md "dist/$name/"
+  tar -czf "dist/$name.tar.gz" -C dist "$name"
+  rm -rf "dist/$name"
+done
+(cd dist && sha256sum ./*.tar.gz > SHA256SUMS)
+ls -1 dist

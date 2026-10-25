@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.8.0 (2026-10-25)
+
+One command, `enola-guides`, in every ecosystem: RubyGems, npm, PyPI,
+crates.io, Go and Homebrew, and binaries for Linux, macOS and Windows on
+the GitHub release. `list`, `show` and `copy` read one catalogue,
+`bundle/bundle.json`, generated from the tree by `script/bundle`: 74 items
+across guides, examples, laws, skills, hooks, recipes and templates. The
+five implementations (Go, Rust, Node, Python, Ruby) are held to the same
+22 cases, byte for byte, by `script/test-clis`, and CI runs them against
+each package as installed from the artifact a release would publish, and
+installs the Homebrew formula from a local tap. `VERSION` is the one
+version; a tag `vX.Y.Z` publishes everywhere through trusted publishing
+(`RELEASING.md`). A `NOTICE` names enola.
+
 ## 0.7.0 (2026-10-25)
 
 Python, TypeScript, Go and Rust. Guides 15 to 18 and a worked example in
