@@ -1,0 +1,18 @@
+#!/bin/bash
+# Every check CI runs that needs no registry: the bundle and the versions
+# in step, every example linted and graded with the pinned enola, the check
+# template end to end, the links, and the Go command against the shared
+# cases. CI also builds and installs every package; script/build-packages
+# and script/test-clis do that here when the toolchains are installed.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+script/bundle --check
+script/sync-version --check
+script/check-links
+script/lint-examples
+script/test-examples
+script/test-check-template
+bin=$(mktemp -d)/enola-guides
+go build -o "$bin" ./cmd/enola-guides
+script/test-clis go="$bin"
