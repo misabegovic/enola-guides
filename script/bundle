@@ -1,0 +1,164 @@
+#!/usr/bin/env python3
+"""Writes bundle/bundle.json: the catalogue every enola-guides command reads,
+and the text of every file it can show or copy.
+
+The bundle is the one artifact the packages share. The Go module embeds it,
+the Rust crate, the npm and the PyPI package ship a copy, and the gem reads it
+beside the tree it also ships. It is generated from the tracked files and
+committed, so `go install` finds it; --check fails when it no longer matches
+the tree, and --into DIR writes a copy there for a package build.
+
+An item is one thing a reader copies: a guide, an example, a law, a skill, a
+hook, a recipe or a template. Each names the file `show` prints, the files
+`copy` writes relative to a default directory, and their modes.
+"""
+import json
+import pathlib
+import re
+import subprocess
+import sys
+
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+OUT = ROOT / "bundle" / "bundle.json"
+
+
+def tracked(prefix):
+    out = subprocess.run(["git", "ls-files", "-s", "--", prefix], cwd=ROOT, check=True, capture_output=True, text=True).stdout
+    files = {}
+    for line in out.splitlines():
+        meta, path = line.split("\t", 1)
+        files[path] = 0o755 if meta.split()[0] == "100755" else 0o644
+    return files
+
+
+def first_heading(path):
+    for line in (ROOT / path).read_text().splitlines():
+        if line.startswith("# "):
+            return line[2:].strip()
+    return None
+
+
+def first_comment(path):
+    for line in (ROOT / path).read_text().splitlines():
+        if line.startswith("# ") and "frozen_string_literal" not in line:
+            return line[2:].strip()
+    return None
+
+
+def skill_description(path):
+    match = re.search(r"^description:\s*(.+)$", (ROOT / path).read_text(), re.M)
+    if not match:
+        return None
+    text = match.group(1).strip()
+    return text if len(text) <= 100 else text[:97].rstrip() + "..."
+
+
+def law_name(path):
+    match = re.search(r'law "([^"]+)"', (ROOT / path).read_text())
+    return match.group(1) if match else None
+
+
+def recipe_title(path):
+    text = (ROOT / path).read_text()
+    name = re.search(r"^recipe:\s*(\S+)", text, re.M)
+    rules = len(re.findall(r"^\s*- id:", text, re.M))
+    label = name.group(1) if name else pathlib.Path(path).stem
+    return f"recipe {label}, {rules} rule{'s' if rules != 1 else ''}"
+
+
+def item(id_, kind, title, show, default_dir, pairs, modes):
+    return {
+        "id": id_,
+        "kind": kind,
+        "title": title,
+        "show": show,
+        "default_dir": default_dir,
+        "files": [{"path": src, "to": to, "mode": modes[src]} for src, to in pairs],
+    }
+
+
+def build():
+    modes = {}
+    for prefix in ("guides", "examples", "templates", "recipes"):
+        modes.update(tracked(prefix))
+    items = []
+
+    for path in sorted(p for p in modes if p.startswith("guides/") and p.endswith(".md")):
+        name = pathlib.Path(path).stem
+        items.append(item(f"guides/{name}", "guide", first_heading(path) or name, path, ".", [(path, f"{name}.md")], modes))
+
+    examples = sorted({p.split("/")[1] for p in modes if p.startswith("examples/") and p.count("/") >= 2 and not p.startswith("examples/laws/")})
+    for name in examples:
+        base = f"examples/{name}/"
+        pairs = [(p, f"{name}/{p[len(base):]}") for p in sorted(modes) if p.startswith(base)]
+        readme = base + "README.md"
+        show = readme if readme in modes else pairs[0][0]
+        items.append(item(f"examples/{name}", "example", (first_heading(readme) if readme in modes else None) or name, show, ".", pairs, modes))
+
+    laws = sorted({p.split("/")[2] for p in modes if p.startswith("examples/laws/") and p.count("/") >= 3})
+    for name in laws:
+        base = f"examples/laws/{name}/enola/constraints/"
+        pairs = [(p, p[len(base):]) for p in sorted(modes) if p.startswith(base)]
+        readme = f"examples/laws/{name}/README.md"
+        items.append(item(f"laws/{name}", "law", first_heading(readme) or name, readme, "enola/constraints", pairs, modes))
+
+    skills = sorted({p.split("/")[2] for p in modes if p.startswith("templates/skills/")})
+    for name in skills:
+        base = f"templates/skills/{name}/"
+        pairs = [(p, f"{name}/{p[len(base):]}") for p in sorted(modes) if p.startswith(base)]
+        show = base + "SKILL.md"
+        items.append(item(f"skills/{name}", "skill", skill_description(show) or name, show, ".claude/skills", pairs, modes))
+
+    for path in sorted(p for p in modes if p.startswith("templates/hooks/")):
+        name = pathlib.Path(path).stem
+        items.append(item(f"hooks/{name}", "hook", first_comment(path) or name, path, ".claude/hooks", [(path, pathlib.Path(path).name)], modes))
+
+    for path in sorted(p for p in modes if p.startswith("recipes/") and p.endswith(".yaml")):
+        name = pathlib.Path(path).stem
+        items.append(item(f"recipes/{name}", "recipe", recipe_title(path), path, "enola/recipes", [(path, pathlib.Path(path).name)], modes))
+    if "recipes/README.md" in modes:
+        items.append(item("recipes/README", "recipe", first_heading("recipes/README.md") or "Recipes", "recipes/README.md", ".", [("recipes/README.md", "RECIPES.md")], modes))
+
+    starter = sorted(p for p in modes if p.startswith("templates/constraints-starter/"))
+    if starter:
+        items.append(item("templates/constraints-starter", "template", "a first set of laws for a Rails application, one file each", starter[0], "enola/constraints",
+                          [(p, pathlib.Path(p).name) for p in starter], modes))
+    if "templates/enola-check.sh" in modes:
+        pairs = [(p, pathlib.Path(p).name) for p in ("templates/enola-check.sh", "templates/enola-findings.rb") if p in modes]
+        items.append(item("templates/enola-check", "template", "the CI check that grades a pull request and renders the comment", "templates/enola-check.sh", "ci", pairs, modes))
+    if "templates/enola-cluster.yaml" in modes:
+        items.append(item("templates/enola-cluster", "template", first_comment("templates/enola-cluster.yaml") or "a cluster configuration", "templates/enola-cluster.yaml", ".",
+                          [("templates/enola-cluster.yaml", "enola-cluster.yaml")], modes))
+
+    needed = sorted({f["path"] for i in items for f in i["files"]} | {i["show"] for i in items})
+    version = (ROOT / "VERSION").read_text().strip()
+    bundle = {
+        "version": version,
+        "usage": (ROOT / "spec" / "cli" / "usage.txt").read_text().replace("{version}", version),
+        "items": items,
+        "files": {path: (ROOT / path).read_text() for path in needed},
+    }
+    return json.dumps(bundle, indent=1, ensure_ascii=False, sort_keys=True) + "\n"
+
+
+def main(argv):
+    text = build()
+    if argv[:1] == ["--check"]:
+        if not OUT.exists() or OUT.read_text() != text:
+            print("bundle/bundle.json does not match the tree; run script/bundle and commit it", file=sys.stderr)
+            return 1
+        print("bundle/bundle.json matches the tree")
+        return 0
+    if argv[:1] == ["--into"]:
+        target = pathlib.Path(argv[1]) / "bundle.json"
+        target.write_text(text)
+        print(f"wrote {target}")
+        return 0
+    OUT.parent.mkdir(exist_ok=True)
+    OUT.write_text(text)
+    print(f"wrote {OUT.relative_to(ROOT)}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

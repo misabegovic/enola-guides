@@ -1,0 +1,11 @@
+$ enola-guides copy templates/enola-check
+exit 0
+--- stdout
+wrote ci/enola-check.sh
+wrote ci/enola-findings.rb
+
+--- stderr
+
+--- files
+ci/enola-check.sh 644 cce5c956abadbb1c
+ci/enola-findings.rb 644 aaa027520d1e81db

@@ -1,0 +1,9 @@
+$ enola-guides copy laws/foreign-keys
+exit 0
+--- stdout
+wrote enola/constraints/foreign-keys.yaml
+
+--- stderr
+
+--- files
+enola/constraints/foreign-keys.yaml 644 ae573f760b7e0dbc

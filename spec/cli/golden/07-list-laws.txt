@@ -1,0 +1,33 @@
+$ enola-guides list laws
+exit 0
+--- stdout
+laws/clean-rings	clean rings
+laws/cluster-laws	cluster laws
+laws/cqrs-queries-never-write	cqrs queries never write
+laws/foreign-keys	foreign keys
+laws/governed-code	governed code
+laws/instantiation	instantiation
+laws/maintenance-tasks	maintenance tasks
+laws/mixins-stay-independent	mixins stay independent
+laws/naming-conventions	naming conventions
+laws/one-door	one door
+laws/one-owner-per-table	one owner per table
+laws/paired-names	paired names
+laws/parts-never-cycle	parts never cycle
+laws/protocol-any-of	protocol any of
+laws/public-surface	public surface
+laws/public-tool-prefix	public tool prefix
+laws/rails-forbidden-names	rails forbidden names
+laws/rails-mutations-are-authorized	rails mutations are authorized
+laws/rails-request-boundaries	rails request boundaries
+laws/rails-strict-arrangement	rails strict arrangement
+laws/readers-read-the-store-only	readers read the store only
+laws/receiverless-request-api	receiverless request api
+laws/resolved-ancestry	resolved ancestry
+laws/routes-have-consumers	routes have consumers
+laws/storage-stays-home	storage stays home
+laws/vanilla-rails-stays-empty	vanilla rails stays empty
+
+--- stderr
+
+--- files

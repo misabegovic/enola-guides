@@ -1,0 +1,8 @@
+$ enola-guides copy
+exit 2
+--- stdout
+
+--- stderr
+enola-guides: copy needs an item id; enola-guides list names them
+
+--- files

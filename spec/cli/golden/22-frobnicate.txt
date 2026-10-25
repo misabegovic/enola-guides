@@ -1,0 +1,8 @@
+$ enola-guides frobnicate
+exit 2
+--- stdout
+
+--- stderr
+enola-guides: no command frobnicate; enola-guides help lists them
+
+--- files

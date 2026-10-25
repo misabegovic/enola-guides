@@ -1,0 +1,81 @@
+$ enola-guides list
+exit 0
+--- stdout
+guides/01-start-here	Start here: the first useful answer in ten minutes
+guides/02-rails	A Rails application
+guides/03-ember	An Ember application
+guides/04-writing-laws	Writing laws
+guides/05-constraints-in-ci	Constraints in CI
+guides/06-hooks-and-agents	Hooks and agents
+guides/07-providers	Providers
+guides/08-beyond-one-repo	Beyond one repository
+guides/09-a-knowledge-base-with-enola	A knowledge base with enola
+guides/10-hooks	Hooks: the graph at the moments that matter
+guides/11-the-skills-as-they-run	The skills, as they run
+guides/12-the-wrapper	The wrapper
+guides/13-tabula	tabula: the knowledge base, kept by a tool
+guides/14-taha	taha: agents under a mandate
+guides/15-python	A Python service
+guides/16-typescript	A TypeScript or JavaScript service
+guides/17-go	A Go service
+guides/18-rust	A Rust service
+examples/ember-app	ember-app
+examples/go-service	A Go service
+examples/knowledge-base	A knowledge base with enola, minimal
+examples/python-service	A Python service
+examples/rails-shop	rails-shop
+examples/rust-service	A Rust service
+examples/typescript-service	A TypeScript service
+laws/clean-rings	clean rings
+laws/cluster-laws	cluster laws
+laws/cqrs-queries-never-write	cqrs queries never write
+laws/foreign-keys	foreign keys
+laws/governed-code	governed code
+laws/instantiation	instantiation
+laws/maintenance-tasks	maintenance tasks
+laws/mixins-stay-independent	mixins stay independent
+laws/naming-conventions	naming conventions
+laws/one-door	one door
+laws/one-owner-per-table	one owner per table
+laws/paired-names	paired names
+laws/parts-never-cycle	parts never cycle
+laws/protocol-any-of	protocol any of
+laws/public-surface	public surface
+laws/public-tool-prefix	public tool prefix
+laws/rails-forbidden-names	rails forbidden names
+laws/rails-mutations-are-authorized	rails mutations are authorized
+laws/rails-request-boundaries	rails request boundaries
+laws/rails-strict-arrangement	rails strict arrangement
+laws/readers-read-the-store-only	readers read the store only
+laws/receiverless-request-api	receiverless request api
+laws/resolved-ancestry	resolved ancestry
+laws/routes-have-consumers	routes have consumers
+laws/storage-stays-home	storage stays home
+laws/vanilla-rails-stays-empty	vanilla rails stays empty
+skills/enola	Use before a change whose impact across the codebase is not obvious, after a change to how module...
+skills/enola-citation-hygiene	Use during grooming; gives every receipt citation in prose a verdict against the committed receip...
+skills/enola-deepdive	Use before shaping or planning a change; asks the graph three questions (impact, governing decisi...
+skills/enola-drift	Use on a schedule or before publishing; regenerates the cluster, compares committed receipts to l...
+skills/enola-grade-before-push	Use before pushing or presenting a change that touched how modules depend on each other, and when...
+skills/enola-ingest-check	Use while ingesting a source into the knowledge base; checks every structural claim against the g...
+skills/enola-intent-first	Use before editing code in a repository whose team keeps decision records compiled into enola, so...
+skills/enola-laws	Use when asked to add, change or explain an architecture law, when a constraints finding names a...
+skills/enola-zoom-out	Use when deep in a change and the question is how it sits in the whole; answers the technical bla...
+hooks/intent-first-gate	PreToolUse on Edit|Write|MultiEdit: block the first write into each
+hooks/record	PostToolUse on Edit|Write|MultiEdit|Bash: record what this turn did, so
+hooks/session-refresh	SessionStart: when a cluster member's HEAD moved past the commit the
+hooks/stop-debt	Stop: block the end of the turn once when this turn pushed without a
+recipes/api-boundaries	recipe api-boundaries, 2 rules
+recipes/background-work	recipe background-work, 2 rules
+recipes/data-ownership	recipe data-ownership, 1 rule
+recipes/ember-conventions	recipe ember-conventions, 9 rules
+recipes/house-recipe-template	recipe house-conventions, 2 rules
+recipes/tenant-foreign-key	recipe tenant-foreign-key, 1 rule
+recipes/README	Recipes
+templates/constraints-starter	a first set of laws for a Rails application, one file each
+templates/enola-check	the CI check that grades a pull request and renders the comment
+templates/enola-cluster	A cluster: every repository's facts land in one union graph, labelled by
+
+--- stderr
+
+--- files

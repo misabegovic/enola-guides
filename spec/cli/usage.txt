@@ -1,0 +1,6 @@
+enola-guides {version}: the enola guides, examples, laws, skills, hooks, recipes and templates
+
+  enola-guides list [kind]       every item, or those of one kind: guide, example, law, skill, hook, recipe, template
+  enola-guides show <id>         print an item: a guide, or the README of an example or a law
+  enola-guides copy <id> [dir]   write an item's files under dir, refusing to overwrite; each kind has a default dir
+  enola-guides version           print the version

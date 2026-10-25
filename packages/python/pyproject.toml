@@ -1,0 +1,35 @@
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[project]
+name = "enola-guides"
+version = "0.8.0"
+description = "The enola guides, examples, laws, skills, hooks, recipes and templates, listed, shown and copied from one command"
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+authors = [{ name = "Muhamed Isabegovic" }]
+requires-python = ">=3.9"
+keywords = ["architecture", "enola", "constraints", "guides", "cli"]
+classifiers = [
+  "Environment :: Console",
+  "Programming Language :: Python :: 3",
+  "Topic :: Software Development :: Quality Assurance",
+]
+
+[project.urls]
+Homepage = "https://github.com/misabegovic/enola-guides"
+Source = "https://github.com/misabegovic/enola-guides"
+Changelog = "https://github.com/misabegovic/enola-guides/blob/main/CHANGELOG.md"
+
+[project.scripts]
+enola-guides = "enola_guides:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/enola_guides"]
+artifacts = ["src/enola_guides/bundle.json"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src/enola_guides", "README.md", "LICENSE", "NOTICE"]
+artifacts = ["src/enola_guides/bundle.json"]
