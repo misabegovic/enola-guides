@@ -12,13 +12,18 @@ enola install --hooks
 writes enola's instructions into the files your coding agents already
 read (Claude Code, Cursor, Copilot, Codex, Pi) and wires two hooks:
 
-- **session start** restores the snapshot and serves it over MCP, so the
-  agent's first structural question is answered from the graph rather
-  than from a grep;
-- **session end** grades the session's delta against the pinned baseline
-  and speaks only when the change introduced a structural regression, or
-  when it could not compare at all (then the remedy is to re-pin, not to
-  doubt the change).
+- **session start** pins the architecture as the session's baseline, the
+  "before" every later grade compares against;
+- **stop** grades what the session changed against that baseline when the
+  agent finishes a turn, and speaks only when the change introduced a
+  structural regression, or when it could not compare at all (then the
+  remedy is to re-pin, not to doubt the change).
+
+In Claude Code the session-start hook also says how to load enola's
+deferred tools in one ToolSearch call, and a `PreToolUse` hook refuses the
+session's first two file searches (`Grep`, `Glob`, or `grep`, `rg`, `find`
+in a shell) with a pointer to the enola tool that answers the question;
+the refusals stop once any enola tool is used.
 
 It previews every change and asks before writing, never creates a shared
 file such as `AGENTS.md` that was not already there, and `enola uninstall`

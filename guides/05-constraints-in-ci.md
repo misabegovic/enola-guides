@@ -20,11 +20,13 @@ script; this guide is why it looks the way it does.
    check out the head, generate; `enola check -baseline previous`. The
    working tree must be clean for this, and the script says so when it is
    not rather than grading a mixed tree.
-4. **Configure the providers the agent has.** Prism when a Ruby with it is
-   on PATH, Rubydex after `enola providers fetch rubydex` (the library is
-   cached beside the binary), eslint when the lint step uploaded its
-   results. Each absence is a named line in the log, never a silent drop,
-   and the same providers feed both snapshots so they stay comparable.
+4. **Configure the providers the agent has.** In a tree with a `Gemfile`,
+   the script fetches the Rubydex library the pinned binary names and
+   configures the built-in `rubydex` and `prism` providers, which need no
+   Ruby on the agent. A provider of your own (eslint, a runtime capture)
+   is one more entry in the same block. Each absence is a named line in
+   the log, never a silent drop, and the same configuration generates both
+   snapshots and grades them, so they stay comparable.
 5. **Watch a few explainers, warn only.**
    `-fail-on constraints,query-loops,layers,cycles -min-confidence 0.8 -warn-only`
    reports the findings those explainers added and keeps the exit code
@@ -41,10 +43,18 @@ script; this guide is why it looks the way it does.
 
 ## Not comparable is not a pass
 
-When the two snapshots differ in enola version, in the providers that ran,
-or in the ignore globs, `check` declines to grade. The script reports that
-as "did not run" on CI (a failed step, so it cannot go quiet) and as a skip
-locally. Read it as "not asked", and fix what made the pair incomparable.
+When the two snapshots differ in enola version or in the ignore globs,
+`check` declines to grade. The script reports that as "did not run" on CI
+(a failed step, so it cannot go quiet) and as a skip locally. Read it as
+"not asked", and fix what made the pair incomparable.
+
+When only the producers differ (a provider whose tool was missing on one
+side), `check` grades the facts both snapshots share and says the verdict
+is partial; the comment names each producer it left out and the side that
+lacked it, because a regression among those facts is not reported. The
+script generates both snapshots and grades them with the same
+configuration, so a partial verdict on CI means a tool the agent lacks,
+not a misconfigured step.
 
 ## Reproduce locally
 

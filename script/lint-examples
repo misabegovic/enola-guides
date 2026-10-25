@@ -1,0 +1,38 @@
+#!/bin/bash
+# Lints every declaration this repository ships against the pinned enola:
+# each example directory, the constraints starter, and each recipe bound to
+# an empty tree. Prints one line per directory and fails on the first
+# problem enola reports.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+enola="${ENOLA:-$(script/fetch-enola)}"
+"$enola" --version
+
+failed=0
+lint() {
+  if out=$("$enola" constraints lint "$1" 2>&1); then
+    echo "ok    $1"
+  else
+    echo "FAIL  $1"
+    echo "$out" | grep -vE '^  enola:recipes/' | sed 's/^/      /'
+    failed=1
+  fi
+}
+
+for dir in examples/rails-shop examples/ember-app examples/knowledge-base examples/laws/*/; do
+  lint "${dir%/}"
+done
+
+# The starter and the recipes are files a team copies; lint each in place
+# of the directory it lands in.
+work=$(mktemp -d)
+trap 'rm -rf "$work"' EXIT
+mkdir -p "$work/starter/enola/constraints"
+cp templates/constraints-starter/*.rb "$work/starter/enola/constraints/"
+lint "$work/starter"
+mkdir -p "$work/recipes/enola/recipes"
+cp recipes/*.yaml "$work/recipes/enola/recipes/"
+lint "$work/recipes"
+
+exit "$failed"

@@ -11,7 +11,7 @@
 # any CI and on a laptop.
 set -euo pipefail
 
-ENOLA_VERSION="${ENOLA_VERSION:-0.5.0}"
+ENOLA_VERSION="${ENOLA_VERSION:-0.4.34}"
 WATCHED_EXPLAINERS="constraints,query-loops,layers,cycles"
 WATCHED_FLAGS=(-fail-on "$WATCHED_EXPLAINERS" -min-confidence 0.8 -warn-only)
 
@@ -54,29 +54,27 @@ if [ ! -x "$ENOLA" ]; then
   curl -fsSL "https://github.com/enola-labs/enola/releases/download/v${ENOLA_VERSION}/${asset}" -o "$work/$asset" || notrun "could not download enola ${ENOLA_VERSION}"
   curl -fsSL "https://github.com/enola-labs/enola/releases/download/v${ENOLA_VERSION}/${asset%.tar.gz}.sha256" -o "$work/${asset%.tar.gz}.sha256" || notrun "could not download the checksum for enola ${ENOLA_VERSION}"
   (cd "$work" && sha256sum -c "${asset%.tar.gz}.sha256" >/dev/null) || notrun "checksum mismatch for ${asset}"
-  tar -xzf "$work/$asset" -C "$(dirname "$ENOLA")"
+  tar -xzf "$work/$asset" -C "$work"
+  mv "$work/${asset%.tar.gz}" "$ENOLA"
   chmod +x "$ENOLA"
 fi
 say "enola ${ENOLA_VERSION} at ${ENOLA}"
 
 # Providers the agent can run. Each absence is a named line, never silence,
-# and the same providers feed both snapshots so they stay comparable.
+# and the same providers feed both snapshots so they stay comparable. Both
+# Ruby providers run inside the binary once the Rubydex library is fetched;
+# no Ruby is needed. The binary pins the library, so neither entry carries an
+# expected_version.
 provider_entries=""
-if ruby -e 'require "prism"' 2>/dev/null; then
-  provider_entries="${provider_entries}  - name: prism
-    command: [\"ruby\", \"$(dirname "$0")/enola_prism_provider.rb\"]
-    expected_version: \"0.1.0\"
+if [ -f Gemfile ]; then
+  rubydex_fetch="$("$ENOLA" providers fetch rubydex 2>&1 | tail -n 1 || true)"
+  if "$ENOLA" providers list 2>/dev/null | grep -q '^  rubydex  0\.'; then
+    provider_entries="  - name: rubydex
+  - name: prism
 "
-else
-  say "prism provider not configured (no ruby with prism on PATH)"
-fi
-rubydex_fetch="$("$ENOLA" providers fetch rubydex 2>&1 | tail -n 1 || true)"
-if "$ENOLA" providers list 2>/dev/null | grep -q '^  rubydex  0\.'; then
-  provider_entries="${provider_entries}  - name: rubydex
-    expected_version: \"0.4.0\"
-"
-else
-  say "rubydex provider not configured (${rubydex_fetch:-providers fetch printed nothing})"
+  else
+    say "rubydex and prism providers not configured (${rubydex_fetch:-providers fetch printed nothing})"
+  fi
 fi
 
 GENERATE_TARGET="$PWD"
@@ -109,7 +107,7 @@ current_ref=""
 "$ENOLA" --generate "$GENERATE_TARGET" >/dev/null 2>&1 || notrun "snapshot generation failed on this checkout"
 
 set +e
-verdict=$("$ENOLA" check -baseline previous "${WATCHED_FLAGS[@]}" -json "$PWD" 2>/dev/null)
+verdict=$("$ENOLA" check -baseline previous "${WATCHED_FLAGS[@]}" -json "$GENERATE_TARGET" 2>/dev/null)
 check_exit=$?
 set -e
 [ "$check_exit" -eq 0 ] || notrun "verdict unavailable (check exited ${check_exit}: not comparable or gate error)"
@@ -122,6 +120,11 @@ details=$(printf '%s' "$summary" | tail -n +3)
 case "$status" in
   CLEAN)
     body="No new architectural findings against \`${base_sha:0:11}\`."
+    ;;
+  PARTIAL)
+    body="enola check: no new findings against \`${base_sha:0:11}\` among the facts both snapshots share. **This is a partial verdict.**
+
+$details"
     ;;
   DECLARED)
     body="enola check: this change declares rules that existing code already breaks, and introduces no new findings on the code it touched (against \`${base_sha:0:11}\`). **Nothing is blocked.**

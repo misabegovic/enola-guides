@@ -14,10 +14,12 @@ hooks.
 enola install --hooks
 ```
 
-wires two: **session start** restores the snapshot and serves it over
-MCP; **stop** grades the session's delta against the pinned baseline and
-speaks only when the change introduced a regression or could not be
-compared. `enola doctor` reports when each last fired and what it
+wires two: **session start** pins the architecture as the session's
+baseline; **stop** grades what the session changed against it and speaks
+only when the change introduced a regression or could not be compared. In
+Claude Code it adds a third, a `PreToolUse` hook that refuses the
+session's first two file searches until an enola tool is used; it sits
+beside the intent-first gate below without overlapping it. `enola doctor` reports when each last fired and what it
 concluded; a hook that never fires is the failure to look for.
 
 ## The intent-first gate (PreToolUse on Edit and Write)

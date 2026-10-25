@@ -1,0 +1,22 @@
+#!/usr/bin/env python3
+"""Fails on a relative Markdown link whose target does not exist."""
+import pathlib
+import re
+import sys
+
+root = pathlib.Path(__file__).resolve().parent.parent
+link = re.compile(r"\]\(([^)\s]+)\)")
+broken = []
+for page in sorted(root.rglob("*.md")):
+    if any(part.startswith(".") or part in ("node_modules", "pkg", "target") for part in page.relative_to(root).parts):
+        continue
+    for number, line in enumerate(page.read_text().splitlines(), 1):
+        for target in link.findall(line):
+            if re.match(r"[a-z]+:", target) or target.startswith("#"):
+                continue
+            path = target.split("#", 1)[0]
+            if not (page.parent / path).exists():
+                broken.append(f"{page.relative_to(root)}:{number}: {target}")
+
+print("\n".join(broken) if broken else "every relative link resolves")
+sys.exit(1 if broken else 0)

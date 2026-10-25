@@ -54,13 +54,34 @@ watched = verdict["failures"] || []
 other = verdict["advisories"] || []
 declared = verdict["declared"] || []
 
+excluded = verdict.dig("intersection_grading", "excluded") || []
+
+def render_partial(excluded)
+  puts "**Partial verdict** — graded only the facts both snapshots share. A regression among these producers' facts is not reported:"
+  puts
+  excluded.each do |producer|
+    puts "- **#{producer["name"]}** (#{producer["kind"]}), missing from the #{producer["lacked_by"]} snapshot"
+  end
+end
+
 if watched.empty? && other.empty? && declared.empty?
-  puts "CLEAN"
+  if excluded.empty?
+    puts "CLEAN"
+  else
+    puts "PARTIAL"
+    puts
+    render_partial(excluded)
+  end
   exit 0
 end
 
 puts((watched.empty? && other.empty?) ? "DECLARED" : "FINDINGS")
 puts
+
+if excluded.any?
+  render_partial(excluded)
+  puts
+end
 
 if watched.any?
   puts "**Watched** — the explainers this check tracks, on code this change touched. Nothing blocks today."
