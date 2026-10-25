@@ -13,7 +13,7 @@ jobs:
     name: Examples lint against the pinned enola
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - run: script/lint-examples
@@ -22,7 +22,7 @@ jobs:
     name: Every package's command gives the same output
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - uses: actions/setup-go@v6
@@ -64,7 +64,7 @@ jobs:
     name: The Homebrew formula builds and passes its test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: Install the formula from a local tap, built from this checkout
@@ -84,7 +84,7 @@ jobs:
     name: Each worked example breaks exactly the laws it says
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - run: script/test-examples
@@ -93,7 +93,7 @@ jobs:
     name: The check template grades a fixture end to end
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - uses: ruby/setup-ruby@v1
@@ -105,7 +105,7 @@ jobs:
     name: Relative links resolve
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - run: script/check-links
@@ -114,7 +114,7 @@ jobs:
     name: The gem builds
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - uses: ruby/setup-ruby@v1
@@ -127,7 +127,7 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           persist-credentials: false
