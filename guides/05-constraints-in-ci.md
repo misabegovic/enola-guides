@@ -2,8 +2,47 @@
 
 The check that grades every pull request against its base branch, reports
 what the change added, and never fails the build until the team decides it
-should. [`templates/enola-check.sh`](../templates/enola-check.sh) is the
-script; this guide is why it looks the way it does.
+should. On GitHub that is one step, [enola-action](#on-github-enola-action);
+on any other CI, or where you want the comment grouped per rule,
+[`templates/enola-check.sh`](../templates/enola-check.sh) is the script and
+most of this guide is why it looks the way it does.
+
+## On GitHub: enola-action
+
+```yaml
+# .github/workflows/architecture.yml
+on: pull_request
+permissions:
+  contents: read
+jobs:
+  architecture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      # The action downloads enola but not the Rubydex library; install it
+      # with the script, which fetches both, and grade with that binary.
+      - run: curl -fsSL https://raw.githubusercontent.com/enola-labs/enola/main/install.sh | ENOLA_INSTALL_DIR="$RUNNER_TEMP/enola" sh
+      - uses: enola-labs/enola-action@v2
+        with:
+          binary: ${{ runner.temp }}/enola/enola
+          fail-on: constraints
+          warn-only: true
+```
+
+It resolves the pull request's exact base commit, generates both sides on
+the runner, annotates the lines that introduced a finding, and writes the
+delta to the job summary. `pr-comment: true` also posts the report as one
+comment edited in place (it needs `pull-requests: write`), and
+`sarif: true` writes a SARIF 2.1.0 file for code scanning, exposed as the
+`sarif-file` output. Its `status` output is one of `clean`,
+`partial_clean`, `regression`, `partial_regression`, `usage_error` and
+`incomparable`, and `partial` says whether the verdict graded only the
+producers both sides share. Without the install step a Ruby repository is
+graded without its providers, on both sides alike, so the verdict is whole
+and quietly misses what Rubydex would have resolved; a repository with no
+Ruby can drop that step and the `binary` input.
 
 ## The shape
 
@@ -55,6 +94,22 @@ lacked it, because a regression among those facts is not reported. The
 script generates both snapshots and grades them with the same
 configuration, so a partial verdict on CI means a tool the agent lacks,
 not a misconfigured step.
+
+## Other shapes of the verdict
+
+`check` writes the same verdict in several shapes, chosen with `-format`:
+`text` (the default), `json` (what the template renders), `sarif` for code
+scanning, `annotations` for the CI's line annotations (`-host github` or
+`-host buildkite`, with `-link` naming the pull request's files view on
+Buildkite), and `summary`, a plain-language account for a reader who does
+not know the explainer names: whether it passes, what got worse, what got
+better, what the run could not see, what to do next. `summary-json` is
+that account as JSON. Each shape grades nothing of its own, so the exit
+code is the verdict's whichever one printed it.
+
+`-reviewers` adds who owns the modules the change touched, read from git
+authorship, and suggests a reviewer when the author is a minor
+contributor; it never fails the run.
 
 ## Reproduce locally
 

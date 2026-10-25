@@ -61,6 +61,53 @@ for exactly them: the `ancestor:` component key reads the resolved
 chain, and the `independent` form (a mixin never reaches its includers)
 refuses by name without it.
 
+## Signatures and the autoload map
+
+Two more reference providers in enola's `examples/providers/ruby/` read
+what a Ruby tree declares rather than what it runs. Each is a plain-Ruby
+script, pinned to its own `PROVIDER_VERSION` (`0.1.0` for both):
+
+```yaml
+providers:
+  - name: rbs
+    command: ["ruby", "/path/to/enola_rbs_provider.rb"]
+    expected_version: "0.1.0"
+  - name: zeitwerk
+    command: ["ruby", "/path/to/enola_zeitwerk_provider.rb"]
+    expected_version: "0.1.0"
+```
+
+- **rbs** reads RBS files, Sorbet `.rbi` files and inline `sig { }`
+  blocks with a hand parser rather than the `rbs` gem, so its facts do not
+  depend on which gem a machine has. It writes method contracts
+  (`rbs-signature:`) and type declarations (`rbs-decl:`) at level
+  `declared`, and the engine marks each extracted method a contract names
+  `typed: true` with the files that declared it. A law can then require a
+  declared signature on a public API. A declaration is a claim about the
+  code, and the level says who made it.
+- **zeitwerk** maps every file under an autoload root to the constant
+  Zeitwerk expects it to define, from the path alone, without booting
+  the app: `app/models/billing/invoice_item.rb` to
+  `Billing::InvoiceItem`, concerns collapsed. Its facts are
+  `convention-derived`. A path it cannot camelize with confidence (a
+  dash, an uppercase letter) emits nothing and is counted, since without
+  boot no inflector override is known.
+
+## Reuse
+
+Provider facts enter the same cache as the extractors' facts, so a
+provider whose inputs did not move is not run again. A script whose
+output partitions by file says so with `files: per-file` and the
+`extensions:` it reads; the seam then hands it only the files that
+changed and keeps the rest. A provider that reads across files must not
+declare that, because the cache would serve facts computed against a tree
+that has since changed. The built-in Rubydex provider keeps one entry for
+the whole index, keyed by the library version, the Ruby files with their
+digests and `Gemfile.lock`, and rebuilds it on any change rather than
+patching it. The receipt's `reuse` block says, per provider, what was
+reused and what was computed, and for the index which part of the key did
+not match.
+
 ## The census
 
 Every provider states what it saw and what it skipped, and enola records
@@ -96,4 +143,7 @@ A provider is any program that prints JSONL facts in the store's schema
 with a `resolution_level` on every fact and a prefix on every name so it
 cannot collide with an extractor's identity, plus the one census line.
 The Prism and eslint scripts in enola's `examples/providers/` are the
-reference; each is under two hundred lines.
+reference; each is under two hundred lines. Give it a `PROVIDER_VERSION`
+it prints for `--version`, raise it whenever its facts change, and pin
+that version in the configuration: a pin that no longer matches skips the
+provider by name rather than mixing two versions' facts in one graph.

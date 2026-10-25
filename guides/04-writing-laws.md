@@ -24,8 +24,8 @@ end
 `rails` declares the conventional parts (controllers, models, jobs,
 mailers, policies, serializers, view components, helpers, services,
 concerns) from the directories Rails keeps them in. A `part` takes
-`files` (bounded globs), `kind` (symbol, module, route, storage, and the
-reference kinds test_ref, file_ref, lint), `named` (one prefix, one
+`files` (bounded globs), `kind` (symbol, module, route, storage,
+dependency, and the reference kinds test_ref, file_ref, lint), `named` (one prefix, one
 suffix or an exact name), `where` (a conjunction over measured props),
 `owns: :methods` (a member's methods count as the member's when an edge
 is walked), `ancestor` (every class under it, over resolved ancestry),
@@ -33,6 +33,13 @@ is walked), `ancestor` (every class under it, over resolved ancestry),
 route of those methods reaches), and `governed_by` (the files a knowledge
 page anchors, with `status:` or `supersedes:` qualifiers). A part name
 written in snake_case is the component `snake-case`.
+
+Quote every value in a `where:` hash, booleans and numbers included:
+`where: { pinned: "false" }`. In v0.4.34 the Ruby surface reads only
+strings and symbols there and drops any other value without a word, so
+`pinned: false` selects every package, pinned or not. `constraints lint`
+shows each part's selector as it resolved (`where pinned=false`), which is
+how to see that a condition arrived.
 
 ## Sentences
 
@@ -65,9 +72,51 @@ Every law carries `why`. `mode` is `advisory` (report, never fail),
 `ratchet` (report the existing, fail the new) or `strict` (fail every
 breach); start in ratchet. `since "2026-08-01"` dates a law against the
 architecture history: a breach the revision at that date already carried
-is reported, one introduced after it is graded. `exempt` names a carve-out
+is reported, one introduced after it is graded. Where the history holds no
+revision that old, git dates the breach instead, by the author date of
+the line that witnesses it (cached in `.enola/blame_cache.json`). A breach
+git cannot date (no git, an uncommitted line, a shallow clone whose
+boundary is newer than the date) grades as if the law had no date and
+says so once; a CI checkout that runs dated laws fetches enough history. `exempt` names a carve-out
 with its owner and reason, and a carve-out nothing matches is itself a
 finding.
+
+## Laws over dependencies
+
+Every direct dependency a manifest declares (`Gemfile`, `package.json`,
+`go.mod`, `Cargo.toml`, `pyproject.toml`, `requirements.txt`,
+`pubspec.yaml`) is a `kind: dependency` fact named by its Package URL
+(`pkg:gem/rails`), carrying the constraint as written, the version the
+lockfile resolved and `pinned`. `pinned` is absent, not false, when a
+lockfile sits beside the manifest that enola cannot read, so a law over it
+stays silent rather than wrong. The shipped `supply-chain` recipe is the
+law that every dependency is pinned:
+
+```yaml
+use_recipe:
+  - recipe: supply-chain
+    as: supply
+    bind:
+      unpinned-dependencies: {}
+```
+
+or the same in Ruby:
+
+```ruby
+part :unpinned, kind: :dependency, where: { type: "package", pinned: "false" }
+
+law "dependencies are pinned" do
+  unpinned.must_be_empty
+  why "a range is a different program on every build"
+  mode :ratchet
+end
+```
+
+A repository with no manifest enola reads gets a finding that the
+selector cannot be evaluated, never a silent pass. What a repository means
+to depend on, with a purpose for each, goes under `dependencies:` in its
+`enola-intent.yaml`, and the intent check reports the difference between
+that list and what the manifests declare.
 
 ## Reading what a law did
 
@@ -91,10 +140,23 @@ no cut, the action says so.
 A law that the snapshot cannot answer is reported as unevaluable with its
 cause and emits no verdict: `no_resolved_ancestry` (no Rubydex provider
 ran), `no_runtime_capture` (no capture for a budget), `no_counterparty`
-(one repository where the law needs two), `no_compiled_pages` (no
-knowledge pages in the snapshot), `unmeasured_property` (a `where` over a
+(one repository where the law needs two), `no_frame_in_members` (a
+capture whose frames all lie outside the part, as a capture keyed by spec
+files does), `no_compiled_pages` (no knowledge pages in the snapshot), `unmeasured_property` (a `where` over a
 prop no extractor emits, with the nearest measured names suggested). Fix
 the snapshot, not the law.
+
+## How much of the law is excused
+
+```bash
+enola constraints ledger .
+```
+
+reports each law's breaches beside the ones its exemptions and
+suppressions excuse, each excuse with its owner, reason and age, and
+names the excuses that now match nothing. A law that holds only because
+everything is exempt shows as exactly that. `--json` writes the same as
+one document.
 
 ## Mining laws you already keep
 

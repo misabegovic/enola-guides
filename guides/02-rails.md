@@ -84,6 +84,11 @@ services). `rails-strict` is the same set with the concerns law added and
 nothing advisory. `vanilla-rails` is for an app that keeps Rails plain and
 wants its extra directories to stay empty with a stated reason each.
 
+Two more recipes ship with enola and suit any Ruby tree. `ruby-conventions`
+forbids the `get_`, `set_` and `is_` prefixes other languages bring along;
+`supply-chain` forbids an unpinned dependency (see
+[writing laws](04-writing-laws.md#laws-over-dependencies)).
+
 `enola constraints lint .` shows every part with what it resolved to and
 every rule a binding left unexpanded, which is how you check the tree
 before the first verdict.
@@ -137,6 +142,31 @@ names the `orders` part's public member that already uses the model. The
 second selects the code behind POST, PUT, PATCH and DELETE routes through
 the `handled_by` edges and demands a call into the policies, so the law
 follows the routes rather than a list of actions.
+
+## Packwerk
+
+A repository that splits into packwerk packages gets the `packwerk`
+explainer once enola finds the packages. It reads `package_paths` from
+`packwerk.yml` and, when the file sets none, looks only at the root and
+`packages/*`, where packwerk itself searches every directory; with packs
+under `packs/` or `components/`, name them:
+
+```yaml
+# packwerk.yml
+package_paths:
+  - packs/*
+```
+
+The snapshot log says how many packages it found. The explainer compares
+each `package.yml`'s declared
+dependencies with what the package's code references, and reports both
+sides. An undeclared reference names its file and line at confidence 0.9,
+because a Ruby constant reaches its package by name; one already in
+`package_todo.yml` is counted, not reported. A declared dependency the code
+never references is reported at 0.7, since a constant reached through
+`constantize`, a YAML class name or only a spec draws no edge. Gate on it
+with `enola check -fail-on packwerk -min-confidence 0.9` once the todo
+files say what you mean.
 
 ## Read a verdict
 

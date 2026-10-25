@@ -1,5 +1,32 @@
 # Changelog
 
+## 0.5.0 (2026-10-25)
+
+What enola shipped between v0.4.4 and v0.4.34, each command and key run
+against v0.4.34 before it was written down:
+
+- Guide 05: enola-action@v2, with the install step that gives it the
+  Rubydex library it does not fetch itself, its outputs, and `-format`
+  `sarif`, `annotations` and `summary`; `-reviewers`. A CI job runs the
+  workflow the guide prints.
+- Guide 06: the opencode and Pi install targets, the Claude Code plugin
+  and what it leaves out, all twenty-two MCP tools, and the questions the
+  CLI answers without an agent (`impact`, `endpoint`, `plan`, `flows`,
+  `constraints ledger`, `dashboard`).
+- Guide 07: the rbs and zeitwerk providers, provider reuse, and pinning a
+  provider of your own.
+- Guide 08: `cluster init` and folders indexed as clusters, why the
+  output directory needs its own name (it is resolved inside each
+  member), `matched_routes`, `caller`, `unreached_by_clients`, `coverage
+  --unresolved`, declaring an in-house HTTP client, and sharing the
+  history.
+- Guide 04: laws over dependencies and the `supply-chain` recipe, the
+  ledger, `no_frame_in_members`, and how `since` falls back to git.
+  In v0.4.34 a Ruby `where:` drops a value that is not a string or a
+  symbol, so the guide quotes booleans and numbers.
+- Guide 02: the `packwerk` explainer and the `package_paths` it needs
+  when packs live outside `packages/`, and the `ruby-conventions` recipe.
+
 ## 0.4.0 (2026-10-25)
 
 Checked against enola v0.4.34. enola skips a provider whose
