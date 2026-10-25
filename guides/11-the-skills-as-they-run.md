@@ -6,6 +6,11 @@ moment, not the prompt. They are described here as they run on a
 twenty-repository knowledge base, and shipped under
 [`templates/skills/`](../templates/skills) to copy.
 
+> With [tabula](13-tabula.md), one `tabula` skill and the loop it runs
+> (search, claim, govern, align, impact, baseline, grade, report, release)
+> take the place of the five skills below; they stay here as the practice
+> written out.
+
 ## Before shaping work: the deepdive (`enola-deepdive`)
 
 Shaping a change starts with three graph questions, answered before a

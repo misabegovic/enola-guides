@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.6.0 (2026-10-25)
+
+tabula and taha. Guide 13 is tabula for an enola user: a release that
+carries cardo inside the binary and finds it last, after `engine.binary`
+and any `enola` on PATH; the tour; laws said on an architecture page and
+compiled into plain enola YAML that upstream v0.4.34 lints clean; a PRD
+bullet graded with `grade: enola check clean`; its hooks beside enola's;
+and which hand-built piece of guides 09 to 12 each verb replaces. Guide
+14 is taha: installing from a clone (the npm name `taha` is another
+package's), a run under a mandate, adopting a repository enola already
+measures, and the `cardo` it calls by name. Guides 09 to 12 keep the
+hand-built path and say where tabula takes it over.
+
 ## 0.5.0 (2026-10-25)
 
 What enola shipped between v0.4.4 and v0.4.34, each command and key run

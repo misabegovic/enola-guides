@@ -56,6 +56,13 @@ to parts that may not cycle, each a complete declaration you copy and run.
     citation hygiene, the blast radius.
 12. [The wrapper](guides/12-the-wrapper.md): the thin command the skills
     call, the named skip, the receipts and the ledger.
+13. [tabula](guides/13-tabula.md): the knowledge base kept by a tool that
+    carries cardo, its laws compiled into `enola/constraints/`, PRDs
+    graded with `enola check`, and which hand-built piece each verb
+    replaces.
+14. [taha](guides/14-taha.md): agents run on a tabula project under a
+    mandate, gated by tabula's verdicts, asking before anything is
+    published.
 
 ## Skills
 

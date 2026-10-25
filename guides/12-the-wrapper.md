@@ -8,6 +8,10 @@ whole design, and it is what lets every skill run on a machine without
 enola without failing, while keeping "the graph was not asked" a
 different sentence from "the graph agreed".
 
+> With [tabula](13-tabula.md) there is no wrapper to write: `govern`,
+> `impact` and `evaluate` ask the engine themselves and say "not asked"
+> rather than pass, which is the named skip this guide builds.
+
 ## The operations
 
 | Op | Answers |
