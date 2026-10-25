@@ -7,6 +7,12 @@ in prose can be re-checked mechanically, and a finding judged once stays
 judged. This guide is that practice, as it runs day to day on a
 twenty-repository knowledge base.
 
+> This guide builds the practice by hand, small enough to read and run
+> without any tool of its own. [tabula](13-tabula.md) is the same practice
+> as one program: its pages, contract, laws compiled into
+> `enola/constraints/`, receipts and gates. The table at the end of that
+> guide says which piece here each of its verbs replaces.
+
 ## Pages compile into the graph
 
 A markdown page carrying an `enola_intent:` block is an intent fact when

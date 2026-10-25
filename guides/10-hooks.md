@@ -8,6 +8,11 @@ they are written for Claude Code's hook protocol (JSON on stdin, exit 2
 to block with the message on stderr) and translate to any agent with
 hooks.
 
+> With [tabula](13-tabula.md), `tabula install --harness claude` writes the
+> gate, the record, the debt and the session hooks this guide wires by hand,
+> and `--uninstall` removes exactly what it wrote. The hand-wired scripts
+> below are the same ideas, short enough to read.
+
 ## enola's own pair
 
 ```bash
