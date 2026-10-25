@@ -3,8 +3,8 @@
 class EnolaGuides < Formula
   desc "Guides, examples, laws, skills and templates for enola, from one command"
   homepage "https://github.com/misabegovic/enola-guides"
-  url "https://github.com/misabegovic/enola-guides/archive/refs/tags/v{version}.tar.gz"
-  sha256 "{sha256}"
+  url "https://github.com/misabegovic/enola-guides/archive/refs/tags/v@VERSION@.tar.gz"
+  sha256 "@SHA256@"
   license "Apache-2.0"
 
   depends_on "go" => :build

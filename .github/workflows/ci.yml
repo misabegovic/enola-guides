@@ -74,7 +74,7 @@ jobs:
           git archive --format=tar.gz --prefix=enola-guides/ -o /tmp/enola-guides.tar.gz HEAD
           sha=$(sha256sum /tmp/enola-guides.tar.gz | cut -d ' ' -f 1)
           brew tap-new --no-git local/test
-          sed -e "s/{version}/$(cat VERSION)/" -e "s/{sha256}/$sha/" \
+          sed -e "s/@VERSION@/$(cat VERSION)/" -e "s/@SHA256@/$sha/" \
               -e 's|url "https://github.com/misabegovic/enola-guides/archive/refs/tags/v.*\.tar\.gz"|url "file:///tmp/enola-guides.tar.gz"\n  version "'"$(cat VERSION)"'"|' \
               packaging/homebrew/enola-guides.rb.in > "$(brew --repository local/test)/Formula/enola-guides.rb"
           brew install --build-from-source local/test/enola-guides
