@@ -21,7 +21,7 @@ output:
   dir: .enola-cluster
 providers:
   - name: rubydex
-    expected_version: "0.4.0"
+  - name: prism
 ```
 
 ```bash

@@ -26,45 +26,39 @@ Run `enola --explain .` and then `enola --generate .`; the receipt in
 ## The two providers
 
 Two things the extractor does not settle are settled by providers, which
-enola runs at snapshot time beside its own extraction:
-
-- **Prism** reads every file with Ruby's own parser and adds the call edges
-  a lexical walk can see. It needs a Ruby 3.3 or newer on PATH (Prism is a
-  default gem), nothing else:
-
-  ```yaml
-  providers:
-    - name: prism
-      command: ["ruby", "/path/to/enola_prism_provider.rb"]
-      expected_version: "0.1.0"
-  ```
+enola runs at snapshot time beside its own extraction. Both run inside the
+enola binary against the Rubydex engine library, with no Ruby involved:
 
 - **Rubydex** resolves constants through nesting and inheritance, types the
   receiver of a call, and linearises every class's ancestry with mixins in
-  order. It runs inside the enola binary against an engine library fetched
-  once, with no Ruby involved, and reads your bundle's gem paths when
-  `bundle` is on PATH so `ApplicationRecord` and `ViewComponent::Base`
-  resolve:
+  order. It reads your bundle's gem paths when `bundle` is on PATH so
+  `ApplicationRecord` and `ViewComponent::Base` resolve.
+- **Prism** adds the call edges a lexical walk can see: a call on the
+  enclosing class, and `new` on a written constant. Named with no
+  `command`, it reads the index Rubydex built in the same run.
 
-  ```bash
-  enola providers fetch rubydex
-  ```
+```yaml
+providers:
+  - name: rubydex
+  - name: prism
+```
 
-  ```yaml
-  providers:
-    - name: rubydex
-      expected_version: "0.4.0"
-  ```
+The install script and `enola upgrade` fetch the library the binary pins;
+after `pip install enola-cli`, `go install` or a source build, run
+`enola providers fetch rubydex` once. Leave `expected_version` off a
+built-in: the binary already pins the library, and a pin that disagrees
+with it skips the provider.
 
-The configuration lives in `enola.yaml` (or `mcp-arch.yaml`) at the
-repository root. With both providers a law can say "every class under
+The configuration lives in `mcp-arch.yaml` at the repository root, the
+one file name enola reads without being told. Rubydex indexes a tree that
+has a `Gemfile`. With both providers a law can say "every class under
 `ApplicationRecord`" and mean the resolved chain, not the text after `<`.
 The [providers guide](07-providers.md) covers the census, the named skips,
-and the runtime capture.
+the Prism script for a Ruby of your own, and the runtime capture.
 
 ## Name the parts
 
-`enola constraints init .` writes `enola/constraints/init.yaml` binding the
+`enola constraints init .` writes `enola/constraints/recipes.yaml` binding the
 recipes whose roles your tree has. For a Rails app that is
 `rails-conventions`:
 

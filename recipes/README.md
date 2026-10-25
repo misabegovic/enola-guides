@@ -44,9 +44,9 @@ The catalogue munola ships built in: `munola init` writes these recipes
 into a project's `enola/recipes/` and binds those whose roles resolve,
 and the munola binary embeds the parameter-free ones, generated from
 these files at release. The `enola` and `enola-rb` gems carry upstream's
-own built-ins only (`rails-conventions`, `rails-strict`, `vanilla-rails`
-and the six arrangements); a team on those channels copies a file from
-here by hand. Each law is
+own built-ins only (`rails-conventions`, `rails-strict`, `vanilla-rails`,
+`ruby-conventions`, `supply-chain` and the six arrangements); a team on
+those channels copies a file from here by hand. Each law is
 an existing enola form; each recipe is here because its laws held on a real
 Rails monolith at a number a team can act on, given beside it.
 

@@ -1,5 +1,36 @@
 # Changelog
 
+## 0.4.0 (2026-10-25)
+
+Checked against enola v0.4.34. enola skips a provider whose
+`expected_version` disagrees with what it answers, and the guides pinned
+Prism at `0.1.0` (the script answers `0.2.0` since v0.4.5) and Rubydex at
+`0.4.0` (the binary carries `0.4.1` since v0.4.33), so their Ruby
+configurations produced no provider facts. Every configuration now names
+the built-in `rubydex` and `prism` providers with no pin; neither needs
+Ruby. Also fixed, each wrong before this release too:
+
+- The configuration file is `mcp-arch.yaml`; enola never read
+  `enola.yaml`, so `examples/rails-shop` now ships `mcp-arch.yaml`.
+- `templates/enola-check.sh` defaults to v0.4.34 (it named `0.5.0`, which
+  does not exist), installs the binary under the name the release archive
+  gives it, configures the built-in providers in a tree with a `Gemfile`,
+  and grades with the configuration it generated with; grading the bare
+  path read no providers and reported every Ruby run as a partial verdict.
+- `templates/enola-findings.rb` renders a partial verdict and names each
+  producer it left ungraded.
+- `constraints init` writes `enola/constraints/recipes.yaml`.
+- A provider that ran on one side only gives a partial verdict, not a
+  decline; the session-start hook pins a baseline, and in Claude Code a
+  `PreToolUse` hook refuses the first two file searches.
+- `doctor` reports the hooks and the baseline, not the Rubydex library.
+- The recipes README lists `ruby-conventions` and `supply-chain` among
+  upstream's built-ins.
+
+A CI workflow lints every example against the pinned enola release, runs
+the check template end to end on a Rails fixture, and checks every
+relative link.
+
 ## 0.3.1 (2026-08-23)
 
 The recipes README says where the catalogue ships: built into munola,

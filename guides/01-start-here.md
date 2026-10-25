@@ -10,9 +10,9 @@ invisible to tools that look at one file at a time, and they are what enola
 reports.
 
 This guide takes you from nothing to a graded change. Everything here is
-written for enola v0.4.4 or later, the release that carries the constraints
-vocabulary this repository's recipes and templates target; if your
-`enola --version` is older, upgrade first.
+checked against enola v0.4.34; the constraints vocabulary the recipes and
+templates use arrived in v0.4.4, so an older `enola --version` cannot run
+them at all. `enola upgrade` installs the newest release.
 
 ## 1. Install
 
@@ -23,9 +23,10 @@ curl -fsSL https://raw.githubusercontent.com/enola-labs/enola/main/install.sh | 
 enola --version
 ```
 
-If your application is Ruby, fetch the Rubydex engine once so enola can
-resolve constants and ancestry through Ruby's own rules (more in
-[providers](07-providers.md)):
+The script also fetches the Rubydex library enola uses to resolve Ruby
+constants and ancestry through Ruby's own rules (more in
+[providers](07-providers.md)). `pip install enola-cli` installs the same
+binary from PyPI; after it, or after `go install`, fetch the library once:
 
 ```bash
 enola providers fetch rubydex
@@ -74,12 +75,16 @@ exits 0 unless you tell it what fails the build:
 enola check -fail-on constraints,cycles,layers .
 ```
 
-Two outcomes are not verdicts, and the output says so: **DECLINED** means
-the two snapshots are not comparable (a different enola version, a
-provider that ran on one side only, changed ignore globs), so re-pin the
-baseline rather than reading it as a pass; **unevaluable** on a rule means
-the snapshot could not answer that rule (no resolved ancestry, no runtime
-capture, one repository where two are needed), named with its cause.
+Three outcomes need reading before you trust them, and the output names
+each. **DECLINED** (exit 3) means the two snapshots are not comparable (a
+different enola version, changed ignore globs, another repository), so
+re-pin the baseline rather than reading it as a pass. A **partial verdict**
+(`PASS (partial verdict)` or `FAIL (partial verdict)`) means a provider or
+extractor ran on one side only: enola grades the facts both sides share and
+names what it left ungraded, and a regression among those facts is not
+reported. **unevaluable** on a rule means the snapshot could not answer
+that rule (no resolved ancestry, no runtime capture, one repository where
+two are needed), named with its cause.
 
 ## 5. Tell your agents
 
@@ -89,11 +94,12 @@ enola doctor
 ```
 
 `install` writes enola's instructions into the files your coding agents
-already read and, with `--hooks`, adds a session-start hook that restores
-the snapshot and a session-end hook that grades the session's delta. It
-previews every change and asks before writing; `enola uninstall` reverses
-it byte for byte. `doctor` reports whether the hooks actually fired, which
-version you run, and whether the Rubydex library is in place. Your agent
+already read and, with `--hooks`, adds a session-start hook that pins the
+architecture as the session's baseline and a stop hook that grades what the
+session changed. It previews every change and asks before writing;
+`enola uninstall` reverses it byte for byte. `doctor` reports whether the
+hooks actually fired, what they concluded, and whether the pinned baseline
+can still be graded against. Your agent
 gets a map it can query instead of grepping; the [hooks and agents
 guide](06-hooks-and-agents.md) says what to put in its skill.
 

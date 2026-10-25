@@ -1,0 +1,58 @@
+#!/bin/bash
+# Runs templates/enola-check.sh end to end: a Rails fixture whose base branch
+# is clean and whose head adds a job calling a controller, graded with the
+# constraints starter's law. Passes when the comment names the law and a
+# full (not partial) verdict, and the script exits 0 under -warn-only.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+here=$PWD
+
+work=$(mktemp -d)
+trap 'rm -rf "$work"' EXIT
+repo="$work/shop"
+mkdir -p "$repo/app/controllers" "$repo/app/jobs" "$repo/enola/constraints" "$repo/ci"
+cd "$repo"
+
+git init -q -b main
+git config user.name fixture
+git config user.email fixture@example.invalid
+printf 'source "https://rubygems.org"\n' > Gemfile
+printf 'GEM\n  remote: https://rubygems.org/\n  specs:\n\nPLATFORMS\n  ruby\n\nDEPENDENCIES\n' > Gemfile.lock
+printf '.enola/\n' > .gitignore
+cat > app/controllers/orders_controller.rb <<'RUBY'
+class ApplicationController; end
+
+class OrdersController < ApplicationController
+  def self.render_receipt(order); end
+end
+RUBY
+cat > app/jobs/receipt_job.rb <<'RUBY'
+class ReceiptJob
+  def perform(order); end
+end
+RUBY
+cp "$here/templates/constraints-starter/background-jobs-never-invoke-controller-code.rb" enola/constraints/
+cp "$here/templates/enola-check.sh" "$here/templates/enola-findings.rb" ci/
+git add -A && git commit -qm base
+git clone -q --bare . "$work/origin.git"
+git remote add origin "$work/origin.git"
+git fetch -q origin
+
+git checkout -qb feature
+cat > app/jobs/receipt_job.rb <<'RUBY'
+class ReceiptJob
+  def perform(order)
+    OrdersController.render_receipt(order)
+  end
+end
+RUBY
+git commit -qam "a job calls a controller"
+
+out=$(env -u CI -u PR_NUMBER PR_BASE_BRANCH=main ENOLA_VERSION="$(cat "$here/ENOLA_VERSION")" bash ci/enola-check.sh)
+echo "$out"
+
+fail() { echo "test-check-template: $1" >&2; exit 1; }
+grep -q 'background-jobs-never-invoke-controller-code' <<<"$out" || fail "the comment does not name the law"
+grep -q 'rubydex-call: ReceiptJob#perform' <<<"$out" || fail "no Rubydex fact reached the verdict"
+! grep -q 'Partial verdict' <<<"$out" || fail "the verdict is partial"
+echo "test-check-template: ok"

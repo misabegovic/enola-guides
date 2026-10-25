@@ -1,0 +1,7 @@
+# Providers run beside enola's own extractors at snapshot time and their
+# facts land in the same graph. Both run inside the binary against the
+# Rubydex library the install script fetches; no Ruby is needed. The binary
+# pins the library, so neither entry carries an expected_version.
+providers:
+  - name: rubydex
+  - name: prism

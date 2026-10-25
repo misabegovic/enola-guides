@@ -10,13 +10,10 @@ in the receipt what each provider contributed and what it skipped.
 ## Configure
 
 ```yaml
-# enola.yaml
+# mcp-arch.yaml
 providers:
-  - name: prism
-    command: ["ruby", "/path/to/enola_prism_provider.rb"]
-    expected_version: "0.1.0"
   - name: rubydex
-    expected_version: "0.4.0"
+  - name: prism
   - name: eslint
     command: ["node", "/path/to/enola_eslint_provider.mjs"]
     expected_version: "0.1.0"
@@ -25,24 +22,36 @@ providers:
 An external provider is an executable the seam runs twice: once with
 `--version`, once with the repository path, reading JSONL facts from its
 stdout and a one-line census from its stderr. A provider with no
-`command` is one the binary carries itself; today that is Rubydex. A
-configured provider whose tool is missing is a named skip in the receipt,
-never an error: the machine not having a tool must not fail the snapshot,
-it must be visible.
+`command` is one the binary carries itself: `rubydex` and `prism`. An
+`expected_version` pins what the provider must answer, and a provider that
+answers anything else is skipped by name; pin a script to its own
+`PROVIDER_VERSION`, and leave a built-in unpinned, since the binary pins
+its library. A configured provider whose tool is missing is a named skip
+in the receipt, never an error: the machine not having a tool must not
+fail the snapshot, it must be visible.
 
 ## The Ruby pair
 
-**Prism** reads with Ruby's own parser and adds the call edges a lexical
-walk can see. Any Ruby 3.3 or newer carries it as a default gem, so the
-provider needs nothing installed.
+**Prism** adds the call edges a lexical walk can see: a call whose
+receiver is the enclosing class, and `new` on a written constant. Named
+with no `command` it runs inside the binary and reads the index Rubydex
+built in the same run, so it needs no Ruby. The reference script,
+`examples/providers/ruby/prism/enola_prism_provider.rb` in the enola tree,
+reads with Ruby's own parser on a Ruby 3.3 or newer; pin it to
+`expected_version: "0.2.0"`. The two are close, not identical: the
+built-in also writes the calls a class body makes (`validates`,
+`before_action`), and writes the constant Rubydex resolved where the
+script writes the one in the source.
 
 **Rubydex** resolves constants through nesting and inheritance, types the
 receiver of a call when it resolves to a constant, and linearises each
 class's ancestry with mixins in resolution order. It runs inside the
-binary: `enola providers fetch rubydex` downloads the engine library once
-at the version enola pins, verifies its published checksum and caches it
-under your user cache directory; `enola providers list` and `enola doctor`
-report it. It indexes the workspace and, when `bundle` is on PATH, the
+binary against an engine library at the version enola pins: the install
+script and `enola upgrade` fetch it, and after `pip install enola-cli`,
+`go install` or a source build `enola providers fetch rubydex` does,
+verifying the published checksum and caching it under your user cache
+directory. `enola providers list` reports it. It indexes a tree with a
+`Gemfile`; without one the census names the skip. It indexes the workspace and, when `bundle` is on PATH, the
 gem paths the bundle reports, so a base class a gem declares resolves
 (and the 357 view components under a gem's base class become a fact). No
 gem enters your Gemfile.

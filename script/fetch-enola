@@ -1,0 +1,26 @@
+#!/bin/bash
+# Downloads the enola release the guides are checked against, verifies the
+# checksum the release publishes, and prints the binary's path. Cached per
+# version under ENOLA_CACHE (default: ~/.cache/enola-guides).
+set -euo pipefail
+
+version="${ENOLA_VERSION:-$(cat "$(dirname "$0")/../ENOLA_VERSION")}"
+os=$(uname -s | tr '[:upper:]' '[:lower:]')
+case "$(uname -m)" in x86_64 | amd64) arch=amd64 ;; arm64 | aarch64) arch=arm64 ;; *) echo "unsupported arch $(uname -m)" >&2; exit 1 ;; esac
+
+dir="${ENOLA_CACHE:-$HOME/.cache/enola-guides}/${version}"
+bin="$dir/enola"
+if [ ! -x "$bin" ]; then
+  work=$(mktemp -d)
+  trap 'rm -rf "$work"' EXIT
+  asset="enola-${version}-${os}-${arch}"
+  base="https://github.com/enola-labs/enola/releases/download/v${version}"
+  curl -fsSL "$base/${asset}.tar.gz" -o "$work/${asset}.tar.gz"
+  curl -fsSL "$base/${asset}.sha256" -o "$work/${asset}.sha256"
+  (cd "$work" && sha256sum -c "${asset}.sha256" >/dev/null)
+  tar -xzf "$work/${asset}.tar.gz" -C "$work"
+  mkdir -p "$dir"
+  mv "$work/${asset}" "$bin"
+  chmod +x "$bin"
+fi
+echo "$bin"

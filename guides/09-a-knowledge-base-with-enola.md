@@ -94,7 +94,7 @@ was taken at, the enola version and the providers that ran. Keep them in
 one file the knowledge base owns:
 
 ```json
-{"repos": {"shop": {"git_commit": "…", "content_digest": "sha256:…", "enola_version": "0.5.0"}}}
+{"repos": {"shop": {"fingerprint": "…", "git_commit": "…", "enola_version": "0.4.34", "providers": ["prism", "rubydex"]}}}
 ```
 
 Two rules follow. **Regenerate the whole cluster, never one member**: a
