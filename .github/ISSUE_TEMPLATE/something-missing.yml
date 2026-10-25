@@ -1,0 +1,11 @@
+name: Something is missing
+description: A guide, an example, a law or a language the guides do not cover yet
+labels: ["missing"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What you wanted to do
+      description: The task, in your words, and where you looked first
+    validations:
+      required: true

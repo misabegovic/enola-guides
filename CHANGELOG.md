@@ -12,7 +12,10 @@ five implementations (Go, Rust, Node, Python, Ruby) are held to the same
 each package as installed from the artifact a release would publish, and
 installs the Homebrew formula from a local tap. `VERSION` is the one
 version; a tag `vX.Y.Z` publishes everywhere through trusted publishing
-(`RELEASING.md`). A `NOTICE` names enola.
+(`RELEASING.md`). A `NOTICE` names enola. `CONTRIBUTING.md`, `SECURITY.md`,
+a code of conduct, issue and pull-request templates and Dependabot for the
+actions and the crate; `script/test` runs every check CI runs that needs
+no registry.
 
 ## 0.7.0 (2026-10-25)
 
