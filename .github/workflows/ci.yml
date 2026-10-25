@@ -50,3 +50,26 @@ jobs:
         with:
           ruby-version: "3.3"
       - run: gem build enola-guides.gemspec
+
+  action-recipe:
+    name: The enola-action recipe in guide 05 runs
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - run: curl -fsSL https://raw.githubusercontent.com/enola-labs/enola/main/install.sh | ENOLA_INSTALL_DIR="$RUNNER_TEMP/enola" sh
+      - id: enola
+        uses: enola-labs/enola-action@v2
+        with:
+          binary: ${{ runner.temp }}/enola/enola
+          fail-on: constraints
+          warn-only: true
+      - name: The action produced a verdict
+        env:
+          STATUS: ${{ steps.enola.outputs.status }}
+        run: |
+          echo "status: $STATUS"
+          case "$STATUS" in clean|partial_clean|regression|partial_regression) ;; *) exit 1 ;; esac
