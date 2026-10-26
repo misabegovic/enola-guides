@@ -6,4 +6,6 @@ twin, with_guests does not, archive is outside the pattern and never asked.
 Declaration: `enola/constraints/pairs.yaml`.
 
 Verify it on your own tree: copy `enola/` into the repository, run
-`enola constraints lint .`, then `enola --generate . && enola check .`.
+`enola constraints lint .`, then `enola --generate . && enola constraints ledger .` for each law's
+count of breaches. With a baseline pinned before the copy (`enola baseline pin .`),
+`enola check .` lists each breach under `Newly declared`.

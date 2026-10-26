@@ -123,7 +123,7 @@ jobs:
       - run: gem build enola-guides.gemspec
 
   action-recipe:
-    name: The enola-action recipe in guide 05 runs
+    name: The enola-action recipes in guide 05 run
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
@@ -131,16 +131,43 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - run: curl -fsSL https://raw.githubusercontent.com/enola-labs/enola/main/install.sh | ENOLA_INSTALL_DIR="$RUNNER_TEMP/enola" sh
-      - id: enola
+      - name: Guide 05 pins the version in ENOLA_VERSION
+        id: pin
+        run: |
+          v=$(cat ENOLA_VERSION)
+          grep -q "version: $v" guides/05-constraints-in-ci.md
+          grep -q "v=$v;" guides/05-constraints-in-ci.md
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+      - id: pinned
+        uses: enola-labs/enola-action@v2
+        with:
+          version: ${{ steps.pin.outputs.version }}
+          fail-on: constraints
+          warn-only: true
+      - name: Install enola and the Rubydex library it pins
+        env:
+          V: ${{ steps.pin.outputs.version }}
+        run: |
+          a=enola-$V-linux-amd64
+          curl -fsSLO "https://github.com/enola-labs/enola/releases/download/v$V/$a.tar.gz"
+          curl -fsSLO "https://github.com/enola-labs/enola/releases/download/v$V/$a.sha256"
+          sha256sum -c "$a.sha256"
+          tar -xzf "$a.tar.gz"
+          mkdir -p "$RUNNER_TEMP/enola" && mv "$a" "$RUNNER_TEMP/enola/enola"
+          "$RUNNER_TEMP/enola/enola" providers fetch rubydex
+          rm "$a.tar.gz" "$a.sha256"
+      - id: ruby
         uses: enola-labs/enola-action@v2
         with:
           binary: ${{ runner.temp }}/enola/enola
           fail-on: constraints
           warn-only: true
-      - name: The action produced a verdict
+      - name: Each produced a verdict
         env:
-          STATUS: ${{ steps.enola.outputs.status }}
+          PINNED: ${{ steps.pinned.outputs.status }}
+          RUBY: ${{ steps.ruby.outputs.status }}
         run: |
-          echo "status: $STATUS"
-          case "$STATUS" in clean|partial_clean|regression|partial_regression) ;; *) exit 1 ;; esac
+          echo "pinned: $PINNED, with rubydex: $RUBY"
+          for s in "$PINNED" "$RUBY"; do
+            case "$s" in clean|partial_clean|regression|partial_regression) ;; *) exit 1 ;; esac
+          done

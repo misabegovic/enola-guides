@@ -11,14 +11,16 @@ Nuxt, Svelte and Next.js are read by the same extractor.
 
 ## Install
 
-enola is not on npm. Install the binary once per machine:
+enola is not on npm, and the npm package named `enola` is an unrelated
+tool that deletes files: do not `npm install -g enola`. Install the
+binary once per machine:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/enola-labs/enola/main/install.sh | sh
 enola --version
 ```
 
-or `pip install enola-cli`, or a binary from the
+or `pipx install enola-cli`, or a binary from the
 [releases](https://github.com/enola-labs/enola/releases) for Linux, macOS
 and Windows. Then the loop from [start here](01-start-here.md).
 
@@ -68,8 +70,9 @@ exported function the router registers) and the route also carries a
 route-scoped laws follow.
 
 **The recipe's two domain rules read `depends_on`, and the TypeScript
-extractor writes `imports`,** so they are silent on a TypeScript tree.
-State the domain's law over imports:
+extractor writes `imports`,** so they are silent on a TypeScript tree
+([writing laws](04-writing-laws.md#recipes) says why). State the domain's
+law over imports:
 
 ```yaml
 components:
@@ -90,7 +93,7 @@ rules:
 Constraint the-domain-imports-no-storage violated: src/domain -> src/db/schema -> src/db/schema via imports
 ```
 
-In v0.4.34 an Express `router.post("/", …)` mounted at `/orders`
+In v0.4.35 an Express `router.post("/", …)` mounted at `/orders`
 produces no route, while `router.post("/create", …)` comes out as
 `POST /orders/create`; a law or a coverage count over a router's root
 path does not see it yet.
@@ -114,3 +117,14 @@ eslint's findings join the graph through the reference provider in
 enola's `examples/providers/js/eslint/`, a Node script under two hundred
 lines that reads the results file your lint step writes; configure it as
 [providers](07-providers.md) shows.
+
+## Where next
+
+- [Writing laws](04-writing-laws.md): every sentence, the modes, and the
+  carve-outs.
+- [Constraints in CI](05-constraints-in-ci.md): the check on every pull
+  request.
+- [Rolling out](19-rolling-out.md): adopting it on a codebase that already
+  breaks the laws you want.
+- [Reading a verdict](20-reading-a-verdict.md): every section of the
+  output.

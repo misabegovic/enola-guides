@@ -7,11 +7,17 @@ in prose can be re-checked mechanically, and a finding judged once stays
 judged. This guide is that practice, as it runs day to day on a
 twenty-repository knowledge base.
 
-> This guide builds the practice by hand, small enough to read and run
-> without any tool of its own. [tabula](13-tabula.md) is the same practice
-> as one program: its pages, contract, laws compiled into
-> `enola/constraints/`, receipts and gates. The table at the end of that
-> guide says which piece here each of its verbs replaces.
+> **An optional track.** Guides 09 to 12 are for a team that keeps
+> decision records and wants each anchored to the code it governs. They
+> assume enola set up as in [start here](01-start-here.md) and, for more
+> than one repository, a [cluster](08-beyond-one-repo.md). Nothing in
+> guides 01 to 08 needs them.
+>
+> They build the practice by hand, small enough to read and run without
+> any tool of its own; [`examples/knowledge-base`](../examples/knowledge-base/README.md)
+> is the smallest one the skills and hooks run against.
+> [tabula](13-tabula.md), in preview and not yet public, is the same
+> practice as one program.
 
 ## Pages compile into the graph
 
@@ -100,16 +106,13 @@ was taken at, the enola version and the providers that ran. Keep them in
 one file the knowledge base owns:
 
 ```json
-{"repos": {"shop": {"fingerprint": "…", "git_commit": "…", "enola_version": "0.4.34", "providers": ["prism", "rubydex"]}}}
+{"repos": {"shop": {"fingerprint": "…", "git_commit": "…", "enola_version": "0.4.35", "providers": ["prism", "rubydex"]}}}
 ```
 
-Two rules follow. **Regenerate the whole cluster, never one member**: a
-snapshot scoped to one repository replaces the union rather than
-updating its slice, and everything that reads the union then answers
-from a narrower world without saying so. **Not comparable is not a
-pass**: when a member's snapshot changed enola version or provider set,
-the grade declines; re-pin and regenerate rather than reading silence as
-clean.
+Two rules from [beyond one repository](08-beyond-one-repo.md) matter
+more here, because a page cites what the union said: regenerate the
+whole cluster, never one member, and read a declined grade as "not
+asked", never as clean.
 
 ## Citations with a grammar
 
@@ -152,3 +155,8 @@ absent it prints one line saying so and exits 0. That is what keeps a
 skill from failing on a machine without enola, and what keeps "the graph
 was not asked" distinguishable from "the graph agreed". The [wrapper
 guide](12-the-wrapper.md) has its shape.
+
+## Where next
+
+[Knowledge-base hooks](10-hooks.md), then [the skills](11-the-skills-as-they-run.md)
+and [the wrapper](12-the-wrapper.md) they call.

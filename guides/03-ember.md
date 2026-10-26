@@ -31,11 +31,11 @@ render-modifier imports, constructors do not fetch, component tests carry
 no fixtures, no legacy property accessor, arguments are not mutated, a
 modifier takes its element, derivations do not write. Every role carries
 its selector as a default, so the binding is short. Copy the recipe into
-your repository and bind it:
+your repository with [`enola-guides`](../README.md#these-guides-as-a-command),
+or download the file from this repository, and bind it:
 
 ```bash
-mkdir -p enola/recipes enola/constraints
-cp $(gem contents enola-guides | grep ember-conventions.yaml) enola/recipes/
+enola-guides copy recipes/ember-conventions   # writes enola/recipes/ember-conventions.yaml
 ```
 
 ```yaml
@@ -58,7 +58,7 @@ unexpanded, and `enola constraints lint .` says so:
       fixture-setup: { match: ["tests/helpers/**"] }
 ```
 
-Copying the recipe, rather than pointing at this gem's copy, is the point:
+Copying the recipe, rather than pointing at a packaged copy, is the point:
 the team reads the reasons, deletes a law it disagrees with, and reviews
 the file on a pull request. A convention that appears from a tool is not
 a convention.
@@ -129,3 +129,14 @@ with the file and line, the reason from the recipe, and the suggested
 action. A pull request that adds four breaches and fixes none reports
 four findings; the 1,700 the codebase already carries stay out of the
 way under `ratchet` and stop growing.
+
+## Where next
+
+- [`examples/ember-app`](../examples/ember-app): an Ember application
+  bound to this recipe in one block.
+- [Writing laws](04-writing-laws.md): every sentence and mode, and the
+  carve-outs for a convention with one sanctioned exception.
+- [Constraints in CI](05-constraints-in-ci.md): the check on every pull
+  request.
+- [Beyond one repository](08-beyond-one-repo.md): the app and the backend
+  it calls as one graph, each client call matched to its route.

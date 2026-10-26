@@ -1,7 +1,9 @@
 # A Rails application
 
 What enola sees in a Rails app, what the two Ruby providers add, and how
-to go from the first snapshot to laws the team wrote.
+to go from the first snapshot to laws the team wrote. The worked example
+is [`examples/rails-shop`](../examples/rails-shop): thirteen laws in the
+Ruby DSL, one file each, with both providers configured.
 
 ## What the snapshot holds
 
@@ -25,9 +27,11 @@ Run `enola --explain .` and then `enola --generate .`; the receipt in
 
 ## The two providers
 
-Two things the extractor does not settle are settled by providers, which
-enola runs at snapshot time beside its own extraction. Both run inside the
-enola binary against the Rubydex engine library, with no Ruby involved:
+The Ruby extractor reads one file at a time, so it cannot tell which
+class a constant names once nesting and inheritance are involved, or what
+a class inherits through its mixins. Two providers settle that at snapshot
+time, beside enola's own extraction. Both are built into the binary and
+run against the Rubydex library, with no Ruby on the machine:
 
 - **Rubydex** resolves constants through nesting and inheritance, types the
   receiver of a call, and linearises every class's ancestry with mixins in
@@ -58,9 +62,12 @@ the Prism script for a Ruby of your own, and the runtime capture.
 
 ## Name the parts
 
-`enola constraints init .` writes `enola/constraints/recipes.yaml` binding the
-recipes whose roles your tree has. For a Rails app that is
-`rails-conventions`:
+`enola constraints init .` writes `enola/constraints/recipes.yaml` binding
+every shipped recipe all of whose roles your tree has a directory for. For
+`rails-conventions` that means `app/controllers`, `app/jobs`, `app/models`,
+`app/mailers`, `app/policies`, `app/serializers` and `app/components`; an
+app missing one gets the recipe named with the directories it lacked and
+not bound, so write the binding yourself and leave the missing role out:
 
 ```yaml
 use_recipe:
@@ -173,7 +180,7 @@ files say what you mean.
 ```bash
 enola baseline pin .
 # change something
-enola --generate . && enola check .
+enola check .
 ```
 
 A constraint breach names the rule, the member, the edge and the reason,
@@ -190,3 +197,16 @@ without a runtime capture, a law across repositories in a one-repository
 snapshot: each is reported as unevaluable with its cause and emits no
 verdict. That is the design. A law nobody could measure must not read as
 kept.
+
+## Where next
+
+- [`examples/laws`](../examples/laws/README.md): the Rails laws among the
+  twenty-six (`rails-request-boundaries`, `rails-mutations-are-authorized`,
+  `rails-strict-arrangement`, `foreign-keys`, `one-door`), each ready to
+  copy.
+- [Writing laws](04-writing-laws.md): every sentence, the modes, and the
+  carve-outs.
+- [Providers](07-providers.md): the census, the runtime capture, and a
+  Prism script for a Ruby of your own.
+- [Constraints in CI](05-constraints-in-ci.md): the check on every pull
+  request.

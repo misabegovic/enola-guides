@@ -18,12 +18,42 @@ jobs:
   architecture:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      # The action downloads enola but not the Rubydex library; install it
-      # with the script, which fetches both, and grade with that binary.
-      - run: curl -fsSL https://raw.githubusercontent.com/enola-labs/enola/main/install.sh | ENOLA_INSTALL_DIR="$RUNNER_TEMP/enola" sh
+      - uses: enola-labs/enola-action@v2
+        with:
+          version: 0.4.35
+          fail-on: constraints
+          warn-only: true
+```
+
+It resolves the pull request's exact base commit, generates both sides on
+the runner, annotates the lines that introduced a finding, and writes the
+delta to the job summary. `version` pins the release; left out, it is
+`latest`, and a check that passed yesterday can fail today with no change
+of yours. `pr-comment: true` also posts the report as one comment edited
+in place (it needs `pull-requests: write`), and `sarif: true` writes a
+SARIF 2.1.0 file for code scanning, exposed as the `sarif-file` output.
+Its `status` output is one of `clean`, `partial_clean`, `regression`,
+`partial_regression`, `usage_error` and `incomparable`, and `partial`
+says whether the verdict graded only the producers both sides share.
+
+The action downloads enola but not the Rubydex library. A repository with
+Ruby installs both, pinned, and hands the action that binary; without it
+the Ruby is graded without its providers on both sides alike, so the
+verdict looks whole and quietly misses everything Rubydex resolves:
+
+```yaml
+      - name: Install enola 0.4.35 and the Rubydex library it pins
+        run: |
+          v=0.4.35; a=enola-$v-linux-amd64
+          curl -fsSLO "https://github.com/enola-labs/enola/releases/download/v$v/$a.tar.gz"
+          curl -fsSLO "https://github.com/enola-labs/enola/releases/download/v$v/$a.sha256"
+          sha256sum -c "$a.sha256"
+          tar -xzf "$a.tar.gz"
+          mkdir -p "$RUNNER_TEMP/enola" && mv "$a" "$RUNNER_TEMP/enola/enola"
+          "$RUNNER_TEMP/enola/enola" providers fetch rubydex
       - uses: enola-labs/enola-action@v2
         with:
           binary: ${{ runner.temp }}/enola/enola
@@ -31,18 +61,8 @@ jobs:
           warn-only: true
 ```
 
-It resolves the pull request's exact base commit, generates both sides on
-the runner, annotates the lines that introduced a finding, and writes the
-delta to the job summary. `pr-comment: true` also posts the report as one
-comment edited in place (it needs `pull-requests: write`), and
-`sarif: true` writes a SARIF 2.1.0 file for code scanning, exposed as the
-`sarif-file` output. Its `status` output is one of `clean`,
-`partial_clean`, `regression`, `partial_regression`, `usage_error` and
-`incomparable`, and `partial` says whether the verdict graded only the
-producers both sides share. Without the install step a Ruby repository is
-graded without its providers, on both sides alike, so the verdict is whole
-and quietly misses what Rubydex would have resolved; a repository with no
-Ruby can drop that step and the `binary` input.
+Removing `warn-only` is the team's decision, made once the reports have
+been read for a while; [rolling out](19-rolling-out.md) says when.
 
 ## The shape
 

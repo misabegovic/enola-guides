@@ -1,5 +1,10 @@
 # taha: agents under a mandate
 
+> **Preview.** taha is not public yet: the links to its repository and
+> releases will not open until it is, and nothing else in these guides
+> needs it. This guide is here so the practice it describes can be read
+> ahead of the release.
+
 [taha](https://github.com/misabegovic/taha), short for tabula harness, is a
 command-line tool that runs coding agents on a [tabula](13-tabula.md)
 project and keeps them on track. You say what you want; taha routes it
@@ -98,3 +103,8 @@ architecture pages, and they are graded by the repository's CI with
 `enola check` as [guide 05](05-constraints-in-ci.md) describes, whoever
 or whatever wrote the change. taha's part is to make an agent's run reach
 that CI only as a draft, after tabula's checks, with you asked first.
+
+## Where next
+
+[Constraints in CI](05-constraints-in-ci.md): the check every change
+reaches, whoever wrote it.

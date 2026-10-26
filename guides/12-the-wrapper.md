@@ -62,12 +62,16 @@ Three things to keep:
 ```
 
 One entry per finding signature, written on judgment. There is no
-pending state: nothing enumerates unjudged findings as work, because a
-finding nobody bet on is an observation.
+pending state: unjudged findings are observations, not a to-do list, and
+nothing enumerates them as work.
 
 ## Why not call the binary directly
 
 Every skill would then carry the absent-binary branch, the config
 resolution and the receipt bookkeeping, and they would drift. The
-wrapper is where those live once, which is why the guides say `kb enola
-impact` where the brain that runs this says `brain.py enola impact`.
+wrapper is where those live once, which is why the skills say
+`kb enola impact` and never a path to the binary.
+
+## Where next
+
+[tabula](13-tabula.md), in preview: the same practice as one program.

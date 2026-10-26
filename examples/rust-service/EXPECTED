@@ -4,4 +4,4 @@
 shop/presentation-reaches-application-only
 the-domain-imports-no-storage
 # Not supply/dependencies-are-pinned, though axum = "0.7" is a caret range:
-# enola v0.4.34 reads a Cargo version with no operator as pinned.
+# enola v0.4.35 reads a Cargo version with no operator as pinned.

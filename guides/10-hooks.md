@@ -44,8 +44,8 @@ says so and asks whether the work should be shaped. When the graph is
 absent, it says so and lets the write through; a missing graph is a
 named skip, never a wall.
 
-`templates/hooks/intent-first-gate.sh` gates Edit and Write. The brain's
-own gate also classifies shell commands as writes (a `sed -i`, a
+`templates/hooks/intent-first-gate.sh` gates Edit and Write. The gate the
+guides' author runs also classifies shell commands as writes (a `sed -i`, a
 redirect, a `cp` into the repository); the template marks where that
 classifier goes and leaves it out, because the rules for what counts as a
 write depend on your tree.
@@ -106,3 +106,8 @@ change before the push and writes the grade into the pull request; and
 when it ends the turn having changed code under a decision without
 touching the decision, it is asked to account for that once. None of
 this needs the agent to know enola exists.
+
+## Where next
+
+[The knowledge-base skills](11-the-skills-as-they-run.md), which these
+hooks enforce, and [the wrapper](12-the-wrapper.md) they call.
