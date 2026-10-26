@@ -1,0 +1,22 @@
+# csharp: explain's base-type preset for tabula, kept here and read by tabula explain (not the law presets the guides describe).
+# Read once as text from the source below, never by loading a runtime. Names are sorted.
+stack: csharp
+languages:
+  - csharp
+lists:
+  - kind: library
+    release: "the root System."
+    source: "roots only: the facts write C# bases bare or as repository paths"
+    roots:
+      - "System."
+test_paths:
+  describe:
+    - "directories ending .Tests, test and tests"
+    - "files *Tests.cs"
+  directories:
+    - "test"
+    - "tests"
+  directory_suffixes:
+    - ".Tests"
+  name_suffixes:
+    - "Tests.cs"

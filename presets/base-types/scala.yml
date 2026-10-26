@@ -1,0 +1,22 @@
+# scala: explain's base-type preset for tabula, kept here and read by tabula explain (not the law presets the guides describe).
+# Read once as text from the source below, never by loading a runtime. Names are sorted.
+stack: scala
+languages:
+  - scala
+lists:
+  - kind: library
+    release: "the roots scala. and java."
+    source: "roots only: the facts write most Scala bases bare"
+    roots:
+      - "scala."
+      - "java."
+test_paths:
+  describe:
+    - "a src/test directory at any depth"
+    - "files *Test, *Tests and *Spec"
+  path_contains:
+    - "/src/test/"
+  stem_suffixes:
+    - "Test"
+    - "Tests"
+    - "Spec"

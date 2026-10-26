@@ -1661,6 +1661,6 @@
    "title": "A cluster: every repository's facts land in one union graph, labelled by"
   }
  ],
- "usage": "enola-guides 0.9.0: the enola guides, examples, laws, skills, hooks, recipes and templates\n\n  enola-guides list [kind]       every item, or those of one kind: guide, example, law, skill, hook, recipe, template\n  enola-guides show <id>         print an item: a guide, or the README of an example or a law\n  enola-guides copy <id> [dir]   write an item's files under dir, refusing to overwrite; each kind has a default dir\n  enola-guides version           print the version\n",
- "version": "0.9.0"
+ "usage": "enola-guides 0.9.1: the enola guides, examples, laws, skills, hooks, recipes and templates\n\n  enola-guides list [kind]       every item, or those of one kind: guide, example, law, skill, hook, recipe, template\n  enola-guides show <id>         print an item: a guide, or the README of an example or a law\n  enola-guides copy <id> [dir]   write an item's files under dir, refusing to overwrite; each kind has a default dir\n  enola-guides version           print the version\n",
+ "version": "0.9.1"
 }

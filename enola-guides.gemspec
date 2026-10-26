@@ -39,6 +39,7 @@ Gem::Specification.new do |spec|
     *Dir.glob("guides/**/*"),
     *Dir.glob("examples/**/*"),
     *Dir.glob("templates/**/*"),
-    *Dir.glob("recipes/**/*")
+    *Dir.glob("recipes/**/*"),
+    *Dir.glob("presets/**/*")
   ]
 end

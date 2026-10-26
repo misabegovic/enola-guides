@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.9.1 (2026-10-26)
+
+`presets/base-types/` holds the base-type presets `tabula explain` splits a
+repository's base types with: one YAML file per stack for Rust, Ruby, Python,
+Java, Kotlin, PHP, Swift, C++, C#, Scala and Dart, each naming its lists, the
+release each list was read from and the stack's test paths. The gemspec ships
+`presets/`, and `test/presets_test.rb` checks that every file parses, names its
+stack and releases, and is among the shipped files.
+
 ## 0.9.0 (2026-10-26)
 
 Checked against enola v0.4.35, and read again as someone who has never

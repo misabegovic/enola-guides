@@ -1,6 +1,6 @@
 [package]
 name = "enola-guides"
-version = "0.9.0"
+version = "0.9.1"
 edition = "2021"
 rust-version = "1.70"
 description = "The enola guides, examples, laws, skills, hooks, recipes and templates, listed, shown and copied from one command"
