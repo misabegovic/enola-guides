@@ -143,9 +143,9 @@ And what it reads:
 | 2, error (no baseline, a bad flag) | fails on CI as "did not run" | none |
 | 3, declined (not comparable) | fails on CI as "did not run" | none |
 
-On a laptop, 2 and 3 skip with the reason instead. Read "did not run" as
-"not asked", and fix what made the pair incomparable: a different enola
-version or different ignore globs on the two sides. It is never a pass.
+On a laptop, 2 and 3 skip with the reason instead. "Did not run" means no
+grade was produced, never a pass: fix what kept it from running, such as
+a different enola version or different ignore globs on the two sides.
 
 When only the producers differ (a provider whose tool was missing on one
 side, or a language or the first Markdown file appearing in the change),
@@ -169,8 +169,8 @@ scanning, `annotations` for the CI's line annotations (`-host github` or
 `-host buildkite`, with `-link` naming the pull request's files view on
 Buildkite), and `summary`, a plain-language account for a reader who does
 not know the explainer names. `summary-json` is that account as JSON. Each
-shape grades nothing of its own, so the exit code is the verdict's
-whichever one printed it. [Reading a verdict](20-reading-a-verdict.md)
+shape grades nothing of its own, so every shape exits with the same
+code. [Reading a verdict](20-reading-a-verdict.md)
 has every section.
 
 `-reviewers` adds who owns the modules the change touched, read from git

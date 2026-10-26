@@ -51,7 +51,9 @@ writes enola's instructions into the file your agent already reads
 `.github/instructions/enola.instructions.md`, ...) and wires the hooks:
 
 - **session start** pins the architecture as the session's baseline, the
-  "before" every later grade compares against;
+  "before" every later grade compares against. A baseline you pinned by
+  hand is left in place; `enola baseline clear .` hands the choice back
+  to the hook;
 - **stop** grades what the session changed against that baseline when the
   agent finishes a turn, and speaks only when the change introduced a
   regression or a finding no policy enforces, or when it could not compare
@@ -68,8 +70,9 @@ through; a search run again after a refusal goes through. With
 `alwaysLoad` set, the refusals rarely fire.
 
 `install` without `--targets` writes for every agent it knows (Claude
-Code, Cursor, Codex, Copilot, Pi, opencode). It previews every change and
-asks before writing (`--yes` where there is no terminal), never creates a
+Code, Cursor, Codex, Copilot, Pi, opencode). It always previews every
+change and asks before writing; with no terminal it writes nothing and
+still exits 0, so a script passes `--yes`. It never creates a
 shared file such as `AGENTS.md` that was not already there, and
 `enola uninstall` reverses it byte for byte. `--global` writes the
 user-level files instead (`~/.claude/settings.json` and

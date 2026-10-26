@@ -3,12 +3,15 @@
 `enola check` prints one verdict: what a change did to the architecture,
 graded against a baseline. This guide is every part of it, every exit
 code, and the outputs that surprise a first reader. The examples are from
-[`examples/python-service`](../examples/python-service) on enola v0.4.35.
+[guide 01](01-start-here.md#6-declare-your-first-law)'s walkthrough on
+[`examples/python-service`](../examples/python-service), at its last
+step (a new `shop/api/admin` package reading storage directly), on enola
+v0.4.35.
 
 ## In plain words first
 
 ```bash
-enola check --summary .
+enola check --summary -fail-on constraints .
 ```
 
 writes the same verdict for a reader who does not know the explainer
@@ -21,24 +24,26 @@ Result: fails
   Fails the build (constraints).
 
 What you changed
-  Added 1 function or type.
-  shop/domain/recent now uses shop/api/orders.
+  Added 1 folder of code and 1 function or type (shop/api/admin).
+  shop/api/admin/report now uses shop/repositories/orders.
 
 Got worse
   Fails the build. Breaks the project's rule
-  "the-domain-never-imports-the-api".
-    at shop/domain
+  "shop/presentation-reaches-application-only".
+    at shop/api/admin/report.py:4
+  Fails the build. Breaks the project's rule "the-api-never-imports-storage".
+    at shop/api/admin
 ```
 
-The exit code is the verdict's whichever form printed it, so `--summary`
-is safe in a script. The rest of this guide is the full form, which is
+Every form exits with the same code, so `--summary` is safe in a
+script. The rest of this guide is the full form, which is
 what a CI log and the template's comment carry.
 
 ## Exit codes
 
 | Code | Word | Means | Do |
 |---|---|---|---|
-| 0 | clean | nothing the policy enforces was introduced | nothing; with no `-fail-on`, every run is 0 |
+| 0 | clean | nothing the policy enforces was introduced | nothing; with no `-fail-on` every run is 0 unless a `strict` law is broken |
 | 1 | regression | the change introduced a finding the policy fails on | read `Regressions (fail)` |
 | 2 | error | the gate could not run: no pinned baseline, a bad flag, an inverted pair | fix the command; it graded nothing |
 | 3 | declined | the baseline is not comparable with the current snapshot | re-pin, or fix what made them differ; it graded nothing |
@@ -50,9 +55,9 @@ reads as a pass.
 ## The header
 
 ```text
-FAIL — 1 structural regression introduced.
+FAIL — 2 structural regressions introduced.
 could not see: 1 file and 1 directory excluded by ignore globs; 3 imports targets outside the graph
-law: 2 rules · 2 breaches · none excused
+law: 8 rules · 6 breaches · none excused
 ```
 
 - **`PASS` or `FAIL`** is the verdict under the policy you set with
@@ -83,9 +88,12 @@ law: 2 rules · 2 breaches · none excused
 A finding reads `[explainer] confidence — title`, then where it is:
 
 ```text
-  - [constraints] 1.00 — Constraint the-domain-never-imports-the-api violated: module-edge: shop/domain -> shop/api -> shop/api via imports
+  - [constraints] 1.00 — Constraint the-api-never-imports-storage violated: module-edge: shop/api/admin -> shop/repositories -> shop/repositories via imports
       forbidden imports edge
 ```
+
+The title names the law and the witness: for an edge law, the edge
+between two modules, then the module it lands in.
 
 Under 1.00 a finding is a candidate to verify, not a verdict; the output
 says so under every list that holds one.
