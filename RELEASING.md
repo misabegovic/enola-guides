@@ -22,7 +22,10 @@ package once, and publishes them: RubyGems, npm, PyPI and crates.io through
 trusted publishing, a GitHub release carrying the Go binaries and
 `SHA256SUMS`, the Go module proxy asked for the tag, and the formula pushed
 to the Homebrew tap. Each job is separate, so one registry failing leaves
-the others published and the failed job can be re-run alone.
+the others published and the failed job can be re-run alone. A job whose
+registry has the version already skips it with a notice instead of
+failing, so a version first published by hand, or a re-run after a
+partial failure, ends green.
 
 ## One-time setup
 
