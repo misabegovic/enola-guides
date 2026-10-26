@@ -203,8 +203,6 @@ change that adds a breach fails:
 $ enola check -fail-on constraints .
 FAIL — 1 structural regression introduced.
 …
-law: 2 rules · 2 breaches · none excused
-
 Regressions (fail):
   - [constraints] 1.00 — Constraint the-domain-never-imports-the-api violated: module-edge: shop/domain -> shop/api -> shop/api via imports
 ```
@@ -214,7 +212,7 @@ change adds, which is the mode to start every law in. A breach is the
 edge between two modules, so a second import along an edge that already
 breaks the law is not a new breach.
 
-**Two shortcuts, and when they apply.** `enola constraints init .`, after
+**A shortcut, and when it applies.** `enola constraints init .`, after
 a snapshot, writes a declaration binding every shipped recipe all of whose
 roles it finds a directory for. Those are mostly Rails directories, so a
 Rails application with controllers, models, jobs, mailers, policies,
@@ -225,7 +223,7 @@ without writing, `--recipe NAME` binds one). Bind a recipe to your own
 directories as [the Python guide](15-python.md) does, or write the law
 yourself as above.
 
-A Ruby team can write the same law in Ruby, parsed and never run:
+A Ruby team can write its laws in Ruby, parsed and never run:
 
 ```ruby
 # enola/constraints/jobs.rb
@@ -243,7 +241,9 @@ end
 In a repository with no Ruby, that `.rb` file is itself the first Ruby
 the snapshot sees, and a baseline pinned before it has none; the next
 `check` is partial and grades a breach the law already had as new. Write
-YAML there, or pin again right after adding the file.
+YAML there. Pinning again right after adding the file also clears it, but
+folds the law's existing breaches into the baseline without listing them,
+so read them first with `enola --generate . && enola constraints ledger .`.
 
 [Writing laws](04-writing-laws.md) has the whole vocabulary, and
 [`examples/laws`](../examples/laws/README.md) has twenty-six to copy.

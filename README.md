@@ -115,9 +115,9 @@ code it governs. Nothing above needs it.
   its verdict), `enola-grade-before-push` (a declined grade is not a
   pass) and `enola-intent-first` (read the governing decision before the
   file moves). Five more belong to the knowledge-base track and call its
-  [wrapper](guides/12-the-wrapper.md): `enola-deepdive`,
-  `enola-ingest-check`, `enola-drift`, `enola-citation-hygiene`,
-  `enola-zoom-out`.
+  [wrapper](guides/12-the-wrapper.md) (`enola-guides copy templates/kb`):
+  `enola-deepdive`, `enola-ingest-check`, `enola-drift`,
+  `enola-citation-hygiene`, `enola-zoom-out`.
 - [`templates/hooks/`](templates/hooks): the knowledge-base hooks of
   [guide 10](guides/10-hooks.md).
 - [`templates/`](templates): the CI check script and its comment

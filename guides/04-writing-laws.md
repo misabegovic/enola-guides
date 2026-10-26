@@ -12,9 +12,9 @@ has twenty-six complete laws, one directory each, to copy.
 Ruby or YAML is a choice of reading, not of power: both compile to the
 same thing, a repository may hold both, and a `.rb` law needs no Ruby on
 the machine. In a repository with no Ruby, though, the first `.rb` file is
-the first Ruby the snapshot sees, so pin the baseline again after adding
-it ([start here](01-start-here.md#6-declare-your-first-law) shows what
-happens if you do not), or write YAML.
+the first Ruby the snapshot sees and makes the next verdict partial
+([start here](01-start-here.md#6-declare-your-first-law) shows what that
+does), so write YAML there.
 
 ## Parts
 
@@ -99,7 +99,7 @@ of a breach needs to judge it. `mode` decides how strictly it holds:
 |---|---|---|
 | `ratchet` (the default) | `Constraint <id> violated`, confidence 1.00 | only a breach the change added |
 | `advisory` | `Advisory constraint <id> violated`, confidence 0.90 | nothing, under the default confidence floor of 1.00 |
-| `strict` | `Strict constraint <id> violated` | every breach, including those the baseline already had |
+| `strict` | `Strict constraint <id> violated` | every breach, including those the baseline already had, even with no `-fail-on` |
 
 Start every law in ratchet. A law that fails only what a change adds can
 be adopted on a repository that breaks it in a hundred places; strict is

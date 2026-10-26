@@ -24,7 +24,7 @@
 # The one skip on CI is a build with nothing to grade: this commit is the
 # base itself.
 #
-# Three seams are yours to fill, marked FILL IN below: how the pinned binary
+# Three places are yours to fill, marked FILL IN below: how the pinned binary
 # is fetched, how the pull request's base branch is read on a push build,
 # and how the comment is posted. Everything between them runs the same on
 # any CI and on a laptop.

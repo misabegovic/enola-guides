@@ -57,7 +57,9 @@ law: 2 rules · 2 breaches · none excused
 
 - **`PASS` or `FAIL`** is the verdict under the policy you set with
   `-fail-on` and `-min-confidence`. With no `-fail-on`, it says
-  `nothing enforced: no policy set` and passes.
+  `nothing enforced: no policy set` and passes, unless a `strict` law is
+  broken: strict fails every run it is broken in, new breach or old.
+  `-warn-only` reports it as `PASS (--warn-only)`.
 - **`could not see`** is what this run did not measure: files your ignore
   globs leave out, import targets outside the repository (a library, the
   standard library). It is a limit of the run, not a finding.
@@ -102,8 +104,8 @@ facts from producers present in BOTH snapshots were graded. This is NOT a full v
 
 A producer is an extractor or a provider. When one ran on one side only
 (a provider whose tool was missing on the CI runner, a language that
-appeared in the change), enola grades what both sides share and names
-what it left out. Two consequences:
+appeared in the change, the first Markdown file in a repository that had
+none), enola grades what both sides share and names what it left out. Two consequences:
 
 - A regression among the excluded facts is not reported.
 - A law's breach can be counted against the shared producers differently

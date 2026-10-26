@@ -10,12 +10,12 @@ and grades a change by comparing the snapshot before it with the snapshot
 after it. A dependency cycle that spans four files, a job that started
 calling a controller, a table a second part began writing to: those are
 invisible to tools that look at one file at a time, and they are what enola
-reports.
+reports. The words this guide uses (snapshot, baseline, law, verdict) are
+defined in [what enola is](00-concepts.md).
 
-This guide takes you from nothing to a graded change. Everything here is
-checked against enola v0.4.34; the constraints vocabulary the recipes and
-templates use arrived in v0.4.4, so an older `enola --version` cannot run
-them at all. `enola upgrade` installs the newest release.
+This guide takes you from nothing to a graded change and a first law.
+Everything here is checked against enola v0.4.35. Any newer release should
+work; when you need the exact one, pin it as step 1 shows.
 
 ## 1. Install
 
@@ -26,14 +26,28 @@ curl -fsSL https://raw.githubusercontent.com/enola-labs/enola/main/install.sh | 
 enola --version
 ```
 
-The script also fetches the Rubydex library enola uses to resolve Ruby
-constants and ancestry through Ruby's own rules (more in
-[providers](07-providers.md)). `pip install enola-cli` installs the same
-binary from PyPI; after it, or after `go install`, fetch the library once:
+The script installs the newest release into `~/.local/bin` and fetches
+the Rubydex library enola uses to resolve Ruby constants and ancestry
+(more in [providers](07-providers.md)). The same binary is on PyPI as
+`enola-cli` (`enola` was taken); install it as a tool, not into a
+project's environment, and pin the version there when you need this
+guide's exactly:
 
 ```bash
-enola providers fetch rubydex
-enola providers list
+pipx install enola-cli==0.4.35      # or: uv tool install enola-cli==0.4.35
+enola providers fetch rubydex       # once, after any install but the script
+```
+
+enola is not on npm. The npm package called `enola` is an unrelated tool
+that deletes files; do not `npm install -g enola`. Every release,
+with a checksum per platform, is on
+[enola's releases page](https://github.com/enola-labs/enola/releases).
+
+To try this guide somewhere safe first, the worked Python example is one
+command away with [`enola-guides`](../README.md#these-guides-as-a-command):
+
+```bash
+enola-guides copy examples/python-service && cd python-service && git init -q
 ```
 
 ## 2. Look before you configure
@@ -41,13 +55,18 @@ enola providers list
 One read-only command, nothing written:
 
 ```bash
-enola --explain .
+enola --explain . 2>/dev/null
 ```
 
-It prints the architecture it detected (pattern, cycles, layer
+It prints what it found (languages, facts by kind, routes, tables,
+dependencies), the architecture it detected (pattern, cycles, layer
 violations), the coupling hotspots with their blast radius, and the code
-health findings. Nothing here is a setting: enola detects every language
-in the tree and indexes all of them into one graph.
+health findings. Every command logs its progress on stderr, about a
+hundred `[engine]` lines on a first run; `2>/dev/null` hides them. Nothing
+here is a setting: enola detects every language in the tree and indexes
+all of them into one graph, and the line `no mcp-arch.yaml ... using
+built-in defaults` means exactly that. `--explain` does not grade your
+laws; their breaches show in `enola check`, below.
 
 ## 3. Take the first snapshot
 
@@ -55,72 +74,164 @@ in the tree and indexes all of them into one graph.
 enola --generate .
 ```
 
-This writes `.enola/` in the repository (add it to `.gitignore`): the
-facts, the findings the explainers computed, and a receipt saying which
-extractors and providers ran and what they skipped. Read the receipt's
-census when something looks missing: a file enola did not parse is named
-there, never silently dropped.
+This writes `.enola/` in the repository: the facts, the findings the
+explainers computed, and a receipt saying which extractors and providers
+ran and what they skipped. Read the receipt's census when something looks
+missing: a file enola did not parse is named there, never silently
+dropped. enola also records each snapshot in a history under `~/.enola/`,
+which `enola gc` reports on and trims.
+
+Ignore `.enola/` in git, all but one file you may add later, the
+suppression ledger (see [writing laws](04-writing-laws.md#modes-dates-and-carve-outs)):
+
+```gitignore
+.enola/*
+!.enola/suppressions.yaml
+```
 
 ## 4. Pin a baseline, change something, grade it
 
 ```bash
 enola baseline pin .
 # ... edit code ...
-enola --generate .
 enola check .
 ```
 
-`check` compares the current snapshot with the pinned one and prints what
-the change did: findings introduced, findings resolved, edges added. It
-exits 0 unless you tell it what fails the build:
+`check` takes a fresh snapshot of the working tree, compares it with the
+pinned one, and prints what the change did: findings introduced, findings
+resolved, edges added. It exits 0 unless you tell it what fails the
+build:
 
 ```bash
 enola check -fail-on constraints,cycles,layers .
 ```
 
-Three outcomes need reading before you trust them, and the output names
-each. **DECLINED** (exit 3) means the two snapshots are not comparable (a
-different enola version, changed ignore globs, another repository), so
-re-pin the baseline rather than reading it as a pass. A **partial verdict**
-(`PASS (partial verdict)` or `FAIL (partial verdict)`) means a provider or
-extractor ran on one side only: enola grades the facts both sides share and
-names what it left ungraded, and a regression among those facts is not
-reported. **unevaluable** on a rule means the snapshot could not answer
-that rule (no resolved ancestry, no runtime capture, one repository where
-two are needed), named with its cause.
+`PASS` or `FAIL` leads the output. Three other words need reading before
+you trust it, and the output names each. **DECLINED** (exit 3) means the
+two snapshots are not comparable (a different enola version, changed
+ignore globs, another repository), so re-pin the baseline rather than
+reading it as a pass. A **partial verdict** (`PASS (partial verdict)` or
+`FAIL (partial verdict)`) means a provider or extractor ran on one side
+only: enola grades the facts both sides share and names what it left
+ungraded. **unevaluable** on a law means the snapshot could not answer it,
+named with its cause. [Reading a verdict](20-reading-a-verdict.md) has
+every section of the output and every exit code.
 
 ## 5. Tell your agents
 
+An agent uses enola through its MCP server, which is the `enola` binary
+run with no arguments. Register it once; for Claude Code 2.1.287 or later,
+with its tools loaded when the session starts:
+
 ```bash
-enola install --hooks
-enola doctor
+claude mcp add-json enola '{"command":"enola","alwaysLoad":true}'
+```
+
+[Hooks and agents](06-hooks-and-agents.md#register-the-mcp-server) has the
+line for Cursor, Codex, Copilot, opencode and Pi. Then the instructions
+and the hooks:
+
+```bash
+enola install --hooks --targets claude --dry-run    # what it would write
+enola install --hooks --targets claude
 ```
 
 `install` writes enola's instructions into the files your coding agents
-already read and, with `--hooks`, adds a session-start hook that pins the
-architecture as the session's baseline and a stop hook that grades what the
-session changed. It previews every change and asks before writing;
-`enola uninstall` reverses it byte for byte. `doctor` reports whether the
-hooks actually fired, what they concluded, and whether the pinned baseline
-can still be graded against. Your agent
-gets a map it can query instead of grepping; the [hooks and agents
-guide](06-hooks-and-agents.md) says what to put in its skill.
+already read (`.claude/rules/enola.md` for Claude Code) and, with
+`--hooks`, a session-start hook that pins the architecture as the
+session's baseline and a stop hook that grades what the session changed.
+Without `--targets` it writes for every agent it knows (Claude Code,
+Cursor, Codex, Copilot, Pi, opencode), previews every change, and asks
+before writing; `--yes` skips the question where there is no terminal.
+`enola uninstall` reverses it byte for byte.
+
+Restart the agent session, then:
+
+```bash
+enola doctor
+```
+
+reports whether the hooks actually fired, what they concluded, and whether
+the pinned baseline can still be graded against. Until a session has
+started in the repository it says `NEITHER HOOK HAS EVER RUN`; that is
+the expected answer before the restart, and the one to worry about after
+it. The hooks are written with the absolute path of your `enola`, so
+before committing `.claude/settings.json` read
+[what to commit](06-hooks-and-agents.md#what-to-commit).
 
 ## 6. Declare your first law
 
-```bash
-enola constraints init .
-enola constraints lint .
+A law is a sentence about two parts of your code, its reason, and how
+strictly it holds. Write it in YAML in `enola/constraints/`; YAML is the
+form every team can write, whatever the language:
+
+```yaml
+# enola/constraints/domain.yaml
+components:
+  - name: domain
+    match: ["shop/domain/**"]
+  - name: api
+    match: ["shop/api/**"]
+rules:
+  - id: the-domain-never-imports-the-api
+    forbid: domain
+    to: api
+    via: imports
+    mode: ratchet
+    because: "the API calls the domain, never the other way round"
 ```
 
-`init` writes a starter declaration bound to the recipes whose roles your
-tree has (controllers, models, jobs for a Rails app) and refuses to
-overwrite one that exists. `lint` shows what each part resolved to. Then
-write one law of your own in Ruby, in `enola/constraints/`:
+Change the globs to two directories of yours. Then:
+
+```bash
+enola constraints lint .     # is it valid, and what did each part match?
+enola check .
+```
+
+`lint` prints each part with the members it matched (`domain  5
+member(s)`); a part that matched nothing is the first thing to fix. A law
+added by the change you are grading is reported apart from what the
+change did, with what already breaks it:
+
+```text
+Newly declared (1) — a rule this change declares, re-forms or un-exempts
+reports these on code the change did not touch. The baseline the rule starts
+from, not regressions the change made:
+```
+
+Commit the law and pin again (`enola baseline pin .`). From now on a
+change that adds a breach fails:
+
+```text
+$ enola check -fail-on constraints .
+FAIL — 1 structural regression introduced.
+…
+Regressions (fail):
+  - [constraints] 1.00 — Constraint the-domain-never-imports-the-api violated: module-edge: shop/domain -> shop/api -> shop/api via imports
+```
+
+`ratchet` reports what already breaks the law and fails only what a
+change adds, which is the mode to start every law in. A breach is the
+edge between two modules, so a second import along an edge that already
+breaks the law is not a new breach.
+
+**A shortcut, and when it applies.** `enola constraints init .`, after
+a snapshot, writes a declaration binding every shipped recipe all of whose
+roles it finds a directory for. Those are mostly Rails directories, so a
+Rails application with controllers, models, jobs, mailers, policies,
+serializers and view components gets `rails-conventions` and its
+neighbours; most other trees get `nothing to bind`, with the directories
+each recipe missed, and nothing is written (`--dry-run` prints the same
+without writing, `--recipe NAME` binds one). Bind a recipe to your own
+directories as [the Python guide](15-python.md) does, or write the law
+yourself as above.
+
+A Ruby team can write its laws in Ruby, parsed and never run:
 
 ```ruby
+# enola/constraints/jobs.rb
 Enola.architecture "shop" do
-  rails
+  rails   # declares controllers, models, jobs and the other Rails parts
 
   law "background jobs never invoke controller code" do
     jobs.must_not_call controllers
@@ -130,39 +241,27 @@ Enola.architecture "shop" do
 end
 ```
 
-The same law in YAML, the form every language's team can write:
+In a repository with no Ruby, that `.rb` file is itself the first Ruby
+the snapshot sees, and a baseline pinned before it has none; the next
+`check` is partial and grades a breach the law already had as new. Write
+YAML there. Pinning again right after adding the file also clears it, but
+folds the law's existing breaches into the baseline without listing them,
+so read them first with `enola --generate . && enola constraints ledger .`.
 
-```yaml
-# enola/constraints/jobs.yaml
-components:
-  - name: jobs
-    match: ["app/jobs/**"]
-  - name: controllers
-    match: ["app/controllers/**"]
-rules:
-  - id: background-jobs-never-invoke-controller-code
-    forbid: jobs
-    to: controllers
-    via: calls
-    mode: ratchet
-    because: "rendering from a job goes through ApplicationController.renderer"
-```
-
-`ratchet` reports what already breaks the law and fails only what a
-change adds, which is the mode to start every law in. The [writing laws
-guide](04-writing-laws.md) has the whole vocabulary.
+[Writing laws](04-writing-laws.md) has the whole vocabulary, and
+[`examples/laws`](../examples/laws/README.md) has twenty-six to copy.
 
 ## Where next
 
-- [A Rails application](02-rails.md): what enola measures in one, the
-  providers that sharpen it, the recipe that names its parts.
-- [An Ember application](03-ember.md): the same for the front end.
-- [Python](15-python.md), [TypeScript](16-typescript.md), [Go](17-go.md),
-  [Rust](18-rust.md): the same for a service in each.
-- [Constraints in CI](05-constraints-in-ci.md): the check step, with a
-  template you copy.
-- [Beyond one repository](08-beyond-one-repo.md): the cluster, and the laws
-  that only make sense across it.
+- Your stack: [Rails](02-rails.md), [Ember](03-ember.md),
+  [Python](15-python.md), [TypeScript](16-typescript.md), [Go](17-go.md),
+  [Rust](18-rust.md).
+- [Constraints in CI](05-constraints-in-ci.md): the check on every pull
+  request, with a template you copy.
+- [Rolling out](19-rolling-out.md): adopting it on a repository that
+  already has years of history, without failing everything on day one.
+- [Hooks and agents](06-hooks-and-agents.md): what an agent does
+  differently with enola connected.
 
 --- stderr
 

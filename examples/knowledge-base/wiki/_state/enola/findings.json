@@ -1,9 +1,9 @@
 {
   "findings": {
-    "cycles|app/jobs -> app/models -> app/jobs": {
+    "constraints|Constraint background-jobs-never-invoke-controller-code violated: ReceiptJob#perform -> OrdersController via calls": {
       "verdict": "accepted",
       "at": "2026-08-22",
-      "reason": "real; the mailer path",
+      "reason": "real; the receipt renders through the controller",
       "landed": "wiki/shop/permanent/architecture.md"
     }
   }

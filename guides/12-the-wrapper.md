@@ -8,6 +8,23 @@ whole design, and it is what lets every skill run on a machine without
 enola without failing, while keeping "the graph was not asked" a
 different sentence from "the graph agreed".
 
+[`templates/kb/kb`](../templates/kb/kb) is one, in Python 3 with the
+standard library only. From the knowledge base's root:
+
+```bash
+enola-guides copy templates/kb     # writes bin/kb; put bin/ on PATH
+kb enola doctor
+```
+
+It reads three settings from the environment: `ENOLA_BIN` (the binary,
+default `enola` on PATH), `KB_CLUSTER` (the cluster config, default
+`enola-cluster.yaml`, else `cluster.yaml`) and `KB_KNOWLEDGE` (the pages
+directory, default `wiki`; receipts go in
+`wiki/_state/enola/receipts.json` and the ledger in `findings.json`
+beside them). [`examples/knowledge-base`](../examples/knowledge-base/README.md)
+is a knowledge base it runs against. Part of the
+[optional knowledge-base track](09-a-knowledge-base-with-enola.md).
+
 > With [tabula](13-tabula.md) there is no wrapper to write: `govern`,
 > `impact` and `evaluate` ask the engine themselves and say "not asked"
 > rather than pass, which is the named skip this guide builds.
@@ -20,7 +37,7 @@ different sentence from "the graph agreed".
 | `receipt [member]` | what was recorded |
 | `diff` | which members' live receipts drifted from the recorded ones |
 | `findings [--repo] [--all]` | the explainers' findings across the cluster, attributed to the member their evidence names, with judged ones hidden |
-| `judge <signature> accepted\|rejected\|noise` | record a verdict in the ledger |
+| `judge <signature> accepted\|rejected\|noise [--reason TEXT] [--landed PAGE]` | record a verdict in the ledger |
 | `impact <symbol>` | fan-in, fan-out, named callers, read from the on-disk facts |
 | `govern <path or page>` | the pages governing a file, or the code a page anchors |
 | `citations` | every receipt citation in prose with its verdict |
@@ -30,6 +47,9 @@ different sentence from "the graph agreed".
 | `doctor` | whether the hooks fire |
 
 ## The shape, in any language
+
+The template is this, and a wrapper of your own in another language keeps
+the same branches:
 
 ```
 resolve binary   -> absent: print "enola: not installed, the graph was not asked"; exit 0
@@ -55,13 +75,19 @@ Three things to keep:
   Exit 3 from the binary means the snapshots were not comparable; the
   wrapper prints that as "not asked", never as a pass.
 
+A citation in prose has one grammar, `receipt <member>@<commit>,
+fingerprint <4 hex>…<4 hex>` (`receipt rails-shop@3f2a9c1, fingerprint
+8d1e…c40a`), and `citations` reports anything else that starts
+`receipt X@` as malformed. Members are labelled by their directory name.
+
 ## The ledger beside the receipts
 
 ```json
-{"findings": {"cycles|app/jobs -> app/models -> app/jobs": {"verdict": "accepted", "at": "2026-08-22", "reason": "real; the mailer path", "landed": "wiki/shop/permanent/architecture.md"}}}
+{"findings": {"constraints|Constraint background-jobs-never-invoke-controller-code violated: ReceiptJob#perform -> OrdersController via calls": {"verdict": "accepted", "at": "2026-08-22", "reason": "real; the receipt renders through the controller", "landed": "wiki/shop/permanent/architecture.md"}}}
 ```
 
-One entry per finding signature, written on judgment. There is no
+One entry per finding signature, `<explainer>|<title>`, written on
+judgment. There is no
 pending state: unjudged findings are observations, not a to-do list, and
 nothing enumerates them as work.
 

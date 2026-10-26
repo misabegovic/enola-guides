@@ -1,5 +1,63 @@
 # Changelog
 
+## 0.9.0 (2026-10-26)
+
+Checked against enola v0.4.35, and read again as someone who has never
+heard of enola: a developer landing on the README, one following guide 01
+literally on a Python service, and a tech lead deciding whether to adopt
+it. What they tripped on is fixed, and every command it changed was run
+against v0.4.35.
+
+- The README says what enola is and how to install it before anything
+  else, and groups the guides into tracks: new to enola, your stack, laws
+  and CI, agents, deeper, and an optional knowledge-base track.
+- Three new guides. [00, what enola is](guides/00-concepts.md): the
+  pieces, a glossary, who makes what, and enola beside linters and
+  dependency-rule tools. [19, rolling out](guides/19-rolling-out.md):
+  measured costs (Mastodon and a 20,000-file Rails monolith), one recipe
+  instead of five, report then enforce, owners, what to commit, turning
+  it off. [20, reading a verdict](guides/20-reading-a-verdict.md): every
+  section and exit code, partial and declined, the surprises.
+- Guide 01: install pinned through `pipx`, the npm `enola` warning, the
+  MCP server registered with `alwaysLoad`, `doctor` before a restart, a
+  first law in YAML that fires on any layout with the output it gives,
+  and why a first `.rb` law in a repository with no Ruby makes the verdict
+  partial and grades an old breach as new.
+- Guide 04: modes as a table with the confidence each reports at; fix,
+  exempt, suppress or leave in the baseline, with the syntax in Ruby and
+  YAML; a recipes section; `check` needs a pinned baseline.
+- Guide 05: the action pinned with `version:`, Rubydex installed pinned;
+  the template's variables, requirements, exit codes and comment.
+- Guide 06: registering the MCP server per agent, what the agent does
+  differently, v0.4.35's narrower search refusal and folder-of-repositories
+  install, what to commit (the hooks carry an absolute path) and how to
+  turn each piece off.
+- `templates/enola-check.sh`: a regression under enforcement is a verdict
+  with a comment, not "did not run"; the confidence floor stays at 1.00 so
+  advisory laws never fail; a shallow clone fails on CI instead of passing
+  quietly; the comment is edited by its numeric id; without Ruby the
+  comment is enola's own summary; `.enola-version` pins the release.
+  `script/test-check-template` covers each.
+- The knowledge-base hooks leave a repository with no decision records
+  alone (`ENOLA_DECISION_DIRS`) and are wired from `.claude/hooks/`, where
+  `enola-guides copy` writes them. The five knowledge-base skills call a
+  wrapper that now ships, `templates/kb/kb`, tested by `script/test-kb`.
+  `examples/knowledge-base`'s cluster config parses on v0.4.35.
+- Fixed: the `enola --generate . && enola check .` line in guide 02, the
+  skills and the twenty-six law READMEs fails with no pinned baseline;
+  `constraints init` binds a recipe only when every role has a directory;
+  a Ruby `via:` keyword on a sentence is dropped (write `via :imports` in
+  the law); `enola gc` trims the local history; the Ember recipe is copied
+  with `enola-guides copy`, not `gem contents`; undefined names (munola,
+  the brain) are gone; `list recipes` no longer lists the recipes README.
+- What v0.4.35 still reads less than the code, each re-checked: an
+  Express `router.post("/")` under a mount, an inline Axum `.nest`, a
+  bare Cargo version read as pinned, an inline TypeScript handler,
+  `layered`'s `depends_on` rules on Python, TypeScript, Go and Rust, and a
+  Ruby `where:` value that is not a string.
+- tabula and taha are marked as a preview: neither is public yet.
+- `script/check-links` checks `#anchors` too.
+
 ## 0.8.0 (2026-10-25)
 
 One command, `enola-guides`, in every ecosystem: RubyGems, npm, PyPI,
