@@ -1,9 +1,15 @@
 ---
 name: enola-drift
-description: Use on a schedule or before publishing; regenerates the cluster, compares committed receipts to live ones, and names the members whose pages want a re-read
+description: Use on a schedule or before publishing; regenerates the cluster, compares committed receipts to live ones, and names the members whose pages want a re-read; knowledge-base track, needs the kb wrapper
 ---
 
 # enola-drift: which members moved
+
+Needs the knowledge base's `kb` wrapper on PATH: `enola-guides copy
+templates/kb` writes it to `bin/kb`, and guide 12 describes it. Run from
+the knowledge base's root, beside its `enola-cluster.yaml`. Where `kb` is
+absent, say the graph was not asked; never fill its answers in from
+memory.
 
 1. `kb enola generate` to regenerate the cluster and record receipts.
 2. `kb enola diff`: each member whose fingerprint or commit moved is

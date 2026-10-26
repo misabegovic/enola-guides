@@ -1,4 +1,4 @@
-# Hooks: the graph at the moments that matter
+# Knowledge-base hooks: the graph at the moments that matter
 
 A hook fires at a moment nobody has to remember: a session starting, the
 first edit into a repository, a turn ending, a push. Each one here reads
@@ -8,24 +8,41 @@ they are written for Claude Code's hook protocol (JSON on stdin, exit 2
 to block with the message on stderr) and translate to any agent with
 hooks.
 
-> With [tabula](13-tabula.md), `tabula install --harness claude` writes the
-> gate, the record, the debt and the session hooks this guide wires by hand,
-> and `--uninstall` removes exactly what it wrote. The hand-wired scripts
-> below are the same ideas, short enough to read.
+Part of the [optional knowledge-base track](09-a-knowledge-base-with-enola.md):
+these hooks hold an agent to a team's decision records. enola's own
+session hooks, which pin a baseline and grade each turn in any
+repository, come from `enola install --hooks` and are in
+[hooks and agents](06-hooks-and-agents.md#the-hooks); install those first,
+then these beside them.
 
-## enola's own pair
+What the four need:
+
+- **A governed repository.** A repository is governed when one of
+  `ENOLA_DECISION_DIRS` exists at its root (space-separated; default
+  `wiki docs/decisions docs/adrs`). A Markdown file under one of them is a
+  decision record; anything else in that repository is code. In a
+  repository with none of those directories the gate, the record and the
+  code-moved debt do nothing, so installing them globally is safe.
+- `jq` on PATH for all four, and `python3` for the session refresh.
+- For the session refresh, the knowledge base's receipts and cluster
+  config ([guide 09](09-a-knowledge-base-with-enola.md)): `RECEIPTS`
+  (default `wiki/_state/enola/receipts.json`) and `CLUSTER` (default
+  `enola-cluster.yaml`).
+
+Copy them into `.claude/hooks/`:
 
 ```bash
-enola install --hooks
+enola-guides copy hooks/intent-first-gate
+enola-guides copy hooks/record
+enola-guides copy hooks/stop-debt
+enola-guides copy hooks/session-refresh
 ```
 
-wires two: **session start** pins the architecture as the session's
-baseline; **stop** grades what the session changed against it and speaks
-only when the change introduced a regression or could not be compared. In
-Claude Code it adds a third, a `PreToolUse` hook that refuses the
-session's first two file searches until an enola tool is used; it sits
-beside the intent-first gate below without overlapping it. `enola doctor` reports when each last fired and what it
-concluded; a hook that never fires is the failure to look for.
+> With [tabula](13-tabula.md) (in preview, not yet public),
+> `tabula install --harness claude` writes the gate, the record, the debt
+> and the session hooks this guide wires by hand, and `--uninstall`
+> removes exactly what it wrote. The hand-wired scripts below are the same
+> ideas, short enough to read.
 
 ## The intent-first gate (PreToolUse on Edit and Write)
 
@@ -44,8 +61,8 @@ says so and asks whether the work should be shaped. When the graph is
 absent, it says so and lets the write through; a missing graph is a
 named skip, never a wall.
 
-`templates/hooks/intent-first-gate.sh` gates Edit and Write. The brain's
-own gate also classifies shell commands as writes (a `sed -i`, a
+`templates/hooks/intent-first-gate.sh` gates Edit and Write. The gate the
+guides' author runs also classifies shell commands as writes (a `sed -i`, a
 redirect, a `cp` into the repository); the template marks where that
 classifier goes and leaves it out, because the rules for what counts as a
 write depend on your tree.
@@ -55,11 +72,11 @@ write depend on your tree.
 When the turn ends, two debts can block it once each:
 
 - **Code moved, no spec moved.** Files changed in a governed repository
-  this turn and no governing page did. The block asks for either the
+  this turn and no decision record in it did. The block asks for either the
   amendment or an explicit sentence, in the reply, saying why the pages
   as written already cover the change.
-- **A push went out with no grade.** A `git push` to a repository
-  happened this turn and no `enola check` ran. The block asks for the
+- **A push went out with no grade.** A `git push` happened this turn and
+  no `enola check` ran. This one applies in every repository. The block asks for the
   grade, read, before finishing.
 
 Both read a small per-session record the PostToolUse hook writes
@@ -77,23 +94,23 @@ reads a graph that matches the checkout it is about to edit.
 
 ## Wiring
 
-Claude Code, in `.claude/settings.json`:
+Claude Code, in `.claude/settings.json`, beside the entries
+`enola install --hooks` wrote (it already registers `enola hook
+session-start` and `enola hook stop`; do not add them a second time):
 
 ```json
 {
   "hooks": {
     "SessionStart": [{"matcher": "startup|resume", "hooks": [
-      {"type": "command", "command": "enola hook session-start"},
-      {"type": "command", "command": "\"${CLAUDE_PROJECT_DIR:-.}/hooks/session-refresh.sh\""}]}],
+      {"type": "command", "command": "\"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/session-refresh.sh\""}]}],
     "PreToolUse": [{"matcher": "Edit|Write|MultiEdit", "hooks": [
-      {"type": "command", "command": "\"${CLAUDE_PROJECT_DIR:-.}/hooks/intent-first-gate.sh\""}]}],
+      {"type": "command", "command": "\"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/intent-first-gate.sh\""}]}],
     "PostToolUse": [{"matcher": "Edit|Write|MultiEdit|Bash", "hooks": [
-      {"type": "command", "command": "\"${CLAUDE_PROJECT_DIR:-.}/hooks/record.sh\""}]}],
+      {"type": "command", "command": "\"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/record.sh\""}]}],
     "UserPromptSubmit": [{"hooks": [
-      {"type": "command", "command": "\"${CLAUDE_PROJECT_DIR:-.}/hooks/record.sh\" reset"}]}],
+      {"type": "command", "command": "\"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/record.sh\" reset"}]}],
     "Stop": [{"hooks": [
-      {"type": "command", "command": "enola hook stop"},
-      {"type": "command", "command": "\"${CLAUDE_PROJECT_DIR:-.}/hooks/stop-debt.sh\""}]}]
+      {"type": "command", "command": "\"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/stop-debt.sh\""}]}]
   }
 }
 ```
@@ -106,3 +123,8 @@ change before the push and writes the grade into the pull request; and
 when it ends the turn having changed code under a decision without
 touching the decision, it is asked to account for that once. None of
 this needs the agent to know enola exists.
+
+## Where next
+
+[The knowledge-base skills](11-the-skills-as-they-run.md), which these
+hooks enforce, and [the wrapper](12-the-wrapper.md) they call.

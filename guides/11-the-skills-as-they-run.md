@@ -1,15 +1,19 @@
-# The skills, as they run
+# The knowledge-base skills, as they run
 
 A skill is a named piece of practice an agent follows. Each of these asks
 the graph one specific question at one specific moment; the value is the
 moment, not the prompt. They are described here as they run on a
 twenty-repository knowledge base, and shipped under
-[`templates/skills/`](../templates/skills) to copy.
+[`templates/skills/`](../templates/skills) to copy. They call the
+knowledge base's [wrapper](12-the-wrapper.md), not the binary, so install
+it first. Part of the [optional knowledge-base track](09-a-knowledge-base-with-enola.md);
+the four skills for any repository are in
+[hooks and agents](06-hooks-and-agents.md#the-skill).
 
-> With [tabula](13-tabula.md), one `tabula` skill and the loop it runs
-> (search, claim, govern, align, impact, baseline, grade, report, release)
-> take the place of the five skills below; they stay here as the practice
-> written out.
+> With [tabula](13-tabula.md) (in preview, not yet public), one `tabula`
+> skill and the loop it runs (search, claim, govern, align, impact,
+> baseline, grade, report, release) take the place of the five skills
+> below; they stay here as the practice written out.
 
 ## Before shaping work: the deepdive (`enola-deepdive`)
 
@@ -81,6 +85,9 @@ strict.
 Each names the call, the moment, and the refusal: what the agent does
 when the graph is absent (say so, proceed, never pretend), when the
 comparison declines (re-pin, never read as clean), when a finding is a
-candidate (confirm against the code, judge once, record). That is the
-practice the hooks enforce and the skills describe; the two are one
-contract read from two sides.
+candidate (confirm against the code, judge once, record). The
+[hooks](10-hooks.md) enforce these rules; the skills explain them.
+
+## Where next
+
+[The wrapper](12-the-wrapper.md) every one of these skills calls.

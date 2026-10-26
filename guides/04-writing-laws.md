@@ -4,7 +4,17 @@ A law is a sentence about parts of your application, its reason, and how
 strictly it holds. Laws live in `enola/constraints/`, in Ruby (`.rb`,
 parsed and never executed) or in YAML, and compile to the same
 declaration. This guide is the Ruby surface; every sentence names a rule
-form the YAML also accepts.
+form the YAML also accepts, and enola's
+[constraints reference](https://github.com/enola-labs/enola/blob/main/docs/CONSTRAINTS.md)
+gives each form in YAML. [`examples/laws`](../examples/laws/README.md)
+has twenty-six complete laws, one directory each, to copy.
+
+Ruby or YAML is a choice of reading, not of power: both compile to the
+same thing, a repository may hold both, and a `.rb` law needs no Ruby on
+the machine. In a repository with no Ruby, though, the first `.rb` file is
+the first Ruby the snapshot sees and makes the next verdict partial
+([start here](01-start-here.md#6-declare-your-first-law) shows what that
+does), so write YAML there.
 
 ## Parts
 
@@ -35,7 +45,7 @@ page anchors, with `status:` or `supersedes:` qualifiers). A part name
 written in snake_case is the component `snake-case`.
 
 Quote every value in a `where:` hash, booleans and numbers included:
-`where: { pinned: "false" }`. In v0.4.34 the Ruby surface reads only
+`where: { pinned: "false" }`. In v0.4.35 the Ruby surface reads only
 strings and symbols there and drops any other value without a word, so
 `pinned: false` selects every package, pinned or not. `constraints lint`
 shows each part's selector as it resolved (`where pinned=false`), which is
@@ -45,7 +55,7 @@ how to see that a condition arrived.
 
 | Sentence | What it states |
 |---|---|
-| `a.must_not_call :b` | no `calls` edge from a into b (`via:` for another edge kind) |
+| `a.must_not_call :b` | no `calls` edge from a into b (`via :imports` on its own line in the law for another edge kind) |
 | `a.must_not_call "params", receiver: :none` | no receiver-less call to a literal |
 | `a.must_not_reach :b` | no path from a to b over any edge kind |
 | `a.may_only_call :b, :c` | a's edges land only in b and c |
@@ -68,18 +78,141 @@ how to see that a condition arrived.
 | `a.must_be_governed` | every file in a is anchored by a knowledge page |
 | `a.advises "look in app/utils first"` | guidance delivered where the edit happens, never a verdict |
 
-Every law carries `why`. `mode` is `advisory` (report, never fail),
-`ratchet` (report the existing, fail the new) or `strict` (fail every
-breach); start in ratchet. `since "2026-08-01"` dates a law against the
-architecture history: a breach the revision at that date already carried
-is reported, one introduced after it is graded. Where the history holds no
-revision that old, git dates the breach instead, by the author date of
-the line that witnesses it (cached in `.enola/blame_cache.json`). A breach
-git cannot date (no git, an uncommitted line, a shallow clone whose
-boundary is newer than the date) grades as if the law had no date and
-says so once; a CI checkout that runs dated laws fetches enough history. `exempt` names a carve-out
-with its owner and reason, and a carve-out nothing matches is itself a
-finding.
+`via` is a word of the law, not of the sentence: write `via :imports` on
+its own line inside `law ... do`. In v0.4.35 a `via:` keyword written on
+the sentence (`a.must_not_call b, via: :imports`) is dropped without a
+word and the law reads `calls`; the breach's witness ends in `via calls`
+or `via imports`, which is how to see which one arrived.
+
+A breach is named by its witness, the edge or fact that breaks the law.
+An edge law's witness is the edge between two modules
+(`module-edge: shop/domain -> shop/api -> shop/api via imports`), so a second import
+along an edge that already breaks the law is the same breach, not a new
+one, and a ratchet law does not fail it.
+
+## Modes, dates and carve-outs
+
+Every law carries `why` (`because:` in YAML): the reason is what a reader
+of a breach needs to judge it. `mode` decides how strictly it holds:
+
+| Mode | A breach is reported as | What fails `check` |
+|---|---|---|
+| `ratchet` (the default) | `Constraint <id> violated`, confidence 1.00 | only a breach the change added |
+| `advisory` | `Advisory constraint <id> violated`, confidence 0.90 | nothing, under the default confidence floor of 1.00 |
+| `strict` | `Strict constraint <id> violated` | every breach, including those the baseline already had, even with no `-fail-on` |
+
+Start every law in ratchet. A law that fails only what a change adds can
+be adopted on a repository that breaks it in a hundred places; strict is
+for a law decided to hold now, after the backlog is gone. Advisory stays
+silent in the gate only while the gate's confidence floor is above 0.90:
+`-min-confidence 0.8` lets an advisory breach fail the build.
+[Constraints in CI](05-constraints-in-ci.md) says how the template sets
+the floor.
+
+`since "2026-08-01"` dates a law against the architecture history: a
+breach the revision at that date already carried is reported, one
+introduced after it is graded.
+
+- Where the history holds no revision that old, git dates the breach
+  instead, by the author date of the line that witnesses it (cached in
+  `.enola/blame_cache.json`).
+- A breach git cannot date (no git, an uncommitted line, a shallow clone
+  whose boundary is newer than the date) grades as if the law had no
+  date, and the run says so once. A CI checkout that runs dated laws
+  fetches enough history.
+
+When a breach should not fail the build, there are four answers, and the
+earliest one that is true is the right one:
+
+1. **Fix it.** The code is wrong and the law stands.
+2. **Exempt it.** The witness is decided to be outside the law, for good
+   and with a reason. The exemption is written on the law, names the
+   exact witness string the breach is titled with, and carries an owner,
+   a reason and a date:
+
+   ```ruby
+   law "controllers reach the schema through one door" do
+     controllers.must_not_call schema
+     why "a second door is a second place to forget authentication"
+     exempt "Api::GraphqlController#execute -> AppSchema.execute via calls",
+            because: "the one sanctioned entry point", owner: "platform", since: "2026-08-22"
+   end
+   ```
+
+   ```yaml
+   exempt:
+     - witness: "Api::GraphqlController#execute -> AppSchema.execute via calls"
+       owner: platform
+       because: "the one sanctioned entry point"
+       since: "2026-08-22"
+   ```
+
+   An exempted witness is reported in its own `Exempted by declaration`
+   section on every run and never fails. An exemption that matches
+   nothing is itself a finding: the breach is gone, or the witness was
+   mistyped. [`examples/laws/one-door`](../examples/laws/one-door) carries
+   one.
+3. **Suppress it.** The breach is real, but a strict law must not block
+   while it is worked off. A suppression is a signed, temporary entry in
+   `.enola/suppressions.yaml`, committed (keep it out of `.gitignore`)
+   and never written by enola:
+
+   ```yaml
+   entries:
+     - rule: company-fk             # or finding_title_prefix: "…"; exactly one
+       owner: alice
+       reason: "legacy tables migrate in Q4"
+       date: "2026-08-10"
+   ```
+
+   A suppressed breach is reported under `Suppressed` and never fails;
+   an invalid file is rejected whole.
+4. **Leave it in the baseline.** A ratchet law already ignores a breach
+   the baseline had. Nobody decided anything; that is the reason to use
+   one of the forms above for anything somebody did decide.
+
+`enola constraints ledger .` (below) shows, per law, how much is excused
+by each of these and by whom.
+
+## Recipes
+
+A recipe is a named bundle of laws over roles, bound to your directories
+in one block. enola ships `layered`, `clean`, `ports-and-adapters`,
+`cqrs`, `event-driven`, `modular-monolith`, `rails-conventions`,
+`rails-strict`, `vanilla-rails`, `ruby-conventions` and `supply-chain`;
+[`recipes/`](../recipes/README.md) has more to copy into your own
+`enola/recipes/`.
+
+```yaml
+# enola/constraints/layers.yaml
+use_recipe:
+  - recipe: layered
+    as: shop
+    mode: ratchet
+    bind:
+      presentation: { match: ["shop/api/**"] }
+      application: { match: ["shop/services/**"] }
+      domain: { match: ["shop/domain/**"] }
+      infrastructure: { match: ["shop/repositories/**"] }
+```
+
+Each rule the recipe expands is reported under the binding's name
+(`shop/presentation-reaches-application-only`), and `constraints lint`
+says how many rules each binding expanded. `layered`, `clean` and
+`ports-and-adapters` are alternative arrangements: bind the one your code
+follows. `enola constraints init` binds every recipe whose roles it
+finds, so on a large Rails application it can bind several at once, and
+`rails-conventions` beside `rails-strict` states some laws twice, in two
+modes; `init --recipe NAME` binds one.
+
+A recipe's rules name one edge kind each, and `via:` matches that kind
+exactly. `layered`'s two domain rules
+(`domain-knows-no-infrastructure`, `domain-knows-no-presentation`) read
+`depends_on`, which the Python, TypeScript, Go and Rust extractors do not
+write; they write `imports`. On those trees the two rules are silent
+whatever the domain imports, and the language guides state the domain's
+law over `imports` beside the recipe. The three rules over `calls` hold
+as written.
 
 ## Laws over dependencies
 
@@ -123,12 +256,16 @@ that list and what the manifests declare.
 ```bash
 enola constraints lint .
 enola constraints explain app/billing/charge.rb
-enola --generate . && enola check .
+enola check .
 ```
 
 `lint` validates every declaration and shows what each part resolved to;
 `explain` answers, for one file, which parts admit it, by which selector,
-and which edges it makes; `check` grades the change. A breach leads its
+and which edges it makes; `check` grades the working tree against the
+pinned baseline (`enola baseline pin .` first, or it exits 2 with `no
+pinned baseline`). A law added since the baseline is listed under `Newly
+declared` with every breach it already has; that list is how to see what
+a new law will say before it can fail anything. A breach leads its
 suggested actions with the smallest cut the graph can see: the far
 part's public member with the same name, its public surface, the part
 the offender's other edges mostly reach, the lightest edge of a cycle,
@@ -168,3 +305,12 @@ proposes candidate laws from what the snapshot shows holds today (a
 namespace every task already lives in, a prefix every public tool already
 carries), each with the count it was mined at, so a team can adopt what
 it practises before it writes what it wants.
+
+## Where next
+
+- [Constraints in CI](05-constraints-in-ci.md): the laws graded on every
+  pull request.
+- [Rolling out](19-rolling-out.md): which laws to start with on a
+  repository that already breaks them, and when to enforce.
+- [Reading a verdict](20-reading-a-verdict.md): every section a breach can
+  land in.

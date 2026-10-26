@@ -13,4 +13,4 @@ exit 1
 enola-guides: .claude/hooks/record.sh exists; nothing was written
 
 --- files
-.claude/hooks/record.sh 755 c1bca8b8acd95fbf
+.claude/hooks/record.sh 755 5e8451780ed76042

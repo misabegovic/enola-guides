@@ -7,7 +7,7 @@ committed receipts, and the finding ledger. The skills under
 [`templates/hooks`](../../templates/hooks) run against exactly these
 files.
 
-- `enola-cluster.yaml`: the members, with `knowledge` pointing at the wiki.
+- `enola-cluster.yaml`: the members, the knowledge base among them.
 - `wiki/shop/permanent/architecture.md`: a page whose `enola_intent`
   anchors it to `app/jobs/**` and `app/models/**`, with one receipt
   citation.
@@ -17,4 +17,8 @@ files.
 - `wiki/_state/enola/findings.json`: the ledger, one judged finding.
 
 `governing_intent app/jobs/order_mailer_job.rb` returns the first page;
-`kb enola citations` verifies its citation against the receipts file.
+`kb enola citations` verifies its citation against the receipts file. The
+`kb` wrapper is [`templates/kb/kb`](../../templates/kb/kb)
+(`enola-guides copy templates/kb` writes it to `bin/kb`); run it from this
+directory. enola labels each member by its directory name, so the
+receipts are keyed `rails-shop` and `ember-app`.

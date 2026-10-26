@@ -10,6 +10,12 @@ A law is a part, a sentence, a reason and a mode. Before writing one, read
 the existing declaration and `enola constraints lint .` so the new part
 does not shadow an existing one.
 
+Write the law in the language the repository's laws already use. In a
+repository with no Ruby, write YAML: the first `.rb` file is a new Ruby
+source to the extractor, the baseline has no Ruby facts, and the grade
+turns partial, reporting breaches the law finds on existing code as
+regressions.
+
 Writing a law:
 
 1. Name the part by what it is (`part :billing, files: "app/billing/**"`),
@@ -24,10 +30,19 @@ Writing a law:
 4. Start in `mode :ratchet`. `strict` is a team decision, never a default.
 5. Run `enola constraints lint .`; every part must resolve to something and
    every rule must be in force, or the lint says which role is unbound.
-6. Run `enola --generate . && enola check .` and read the verdicts the new
-   law produces before presenting it. A law that reports hundreds of
-   existing breaches is fine under ratchet; a law that reports none may be
-   selecting nothing, which `constraints explain <file>` settles.
+6. Grade it against a baseline pinned before the law existed: `enola check .`
+   (pin first with `enola baseline pin .` if `check` says there is none, then
+   add the law). The breaches it finds on existing code are listed under
+   "Newly declared": the law's starting point, not regressions. Read them
+   before presenting it. With no baseline at all, `enola --generate .` then
+   `enola constraints ledger .` lists each rule's breaches. A law that
+   reports hundreds of existing breaches is fine under ratchet; a law that
+   reports none may be selecting nothing, which
+   `enola constraints explain <a file it should select>` settles.
+7. `mode :advisory` reports at confidence 0.90, below the 1.00 a check
+   fails at, so it never fails a build unless the check lowers its floor
+   with `-min-confidence`. `mode :strict` fails on every breach, old or new;
+   its only override is a signed entry in `.enola/suppressions.yaml`.
 
 Reading a finding: the title names the rule, the member and the edge; the
 first suggested action is the smallest cut the graph can see; "cannot be

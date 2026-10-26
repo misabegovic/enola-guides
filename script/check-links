@@ -1,22 +1,46 @@
 #!/usr/bin/env python3
-"""Fails on a relative Markdown link whose target does not exist."""
+"""Fails on a relative Markdown link whose target does not exist, or whose
+#anchor names no heading in the target page (GitHub's slugs)."""
 import pathlib
 import re
 import sys
 
 root = pathlib.Path(__file__).resolve().parent.parent
 link = re.compile(r"\]\(([^)\s]+)\)")
+anchors_of = {}
+
+
+def anchors(page):
+    if page not in anchors_of:
+        seen, found, fenced = {}, set(), False
+        for line in page.read_text().splitlines():
+            if line.lstrip().startswith("```"):
+                fenced = not fenced
+            if fenced or not line.startswith("#"):
+                continue
+            text = line.lstrip("#").strip()
+            slug = re.sub(r"[^\w\- ]", "", text.lower()).replace(" ", "-")
+            n = seen.get(slug, 0)
+            seen[slug] = n + 1
+            found.add(slug if n == 0 else f"{slug}-{n}")
+        anchors_of[page] = found
+    return anchors_of[page]
+
+
 broken = []
 for page in sorted(root.rglob("*.md")):
     if any(part.startswith(".") or part in ("node_modules", "pkg", "target") for part in page.relative_to(root).parts):
         continue
     for number, line in enumerate(page.read_text().splitlines(), 1):
         for target in link.findall(line):
-            if re.match(r"[a-z]+:", target) or target.startswith("#"):
+            if re.match(r"[a-z]+:", target):
                 continue
-            path = target.split("#", 1)[0]
-            if not (page.parent / path).exists():
+            path, _, anchor = target.partition("#")
+            dest = (page.parent / path) if path else page
+            if not dest.exists():
                 broken.append(f"{page.relative_to(root)}:{number}: {target}")
+            elif anchor and dest.is_file() and dest.suffix == ".md" and anchor not in anchors(dest.resolve()):
+                broken.append(f"{page.relative_to(root)}:{number}: {target} (no such heading)")
 
 print("\n".join(broken) if broken else "every relative link resolves")
 sys.exit(1 if broken else 0)

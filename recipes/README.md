@@ -40,15 +40,15 @@ breach. Start with ratchet.
 
 ## The recipes
 
-The catalogue munola ships built in: `munola init` writes these recipes
-into a project's `enola/recipes/` and binds those whose roles resolve,
-and the munola binary embeds the parameter-free ones, generated from
-these files at release. The `enola` and `enola-rb` gems carry upstream's
-own built-ins only (`rails-conventions`, `rails-strict`, `vanilla-rails`,
-`ruby-conventions`, `supply-chain` and the six arrangements); a team on
-those channels copies a file from here by hand. Each law is
-an existing enola form; each recipe is here because its laws held on a real
-Rails monolith at a number a team can act on, given beside it.
+enola carries its own built-in recipes (`rails-conventions`,
+`rails-strict`, `vanilla-rails`, `ruby-conventions`, `supply-chain` and
+the six arrangements: `layered`, `clean`, `ports-and-adapters`, `cqrs`,
+`event-driven`, `modular-monolith`), and a binding names them with nothing
+to copy. The others below are not built in: copy one with
+`enola-guides copy recipes/<name>`, which writes
+`enola/recipes/<name>.yaml`, or download the file. Each law is an existing
+enola form; each recipe is here because its laws held on a real Rails
+monolith at a number a team can act on, given beside it.
 
 | Recipe | States | Held at |
 |---|---|---|
@@ -82,7 +82,7 @@ in the current release does not rebind the part a graph law names. They join
 - `background-work.yaml`: maintenance tasks live in the `Maintenance`
   namespace the runner resolves, and never reach controllers.
 - `tenant-foreign-key.yaml`: a template; replace `TENANT_COLUMN` and
-  `TENANT_TABLE` (munola's generator does) and every table carrying the
+  `TENANT_TABLE` and every table carrying the
   column must carry the key.
 
 Laws whose far end is a helper of your own (a promise-unwrapping getter

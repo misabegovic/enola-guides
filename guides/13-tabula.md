@@ -1,5 +1,10 @@
 # tabula: the knowledge base, kept by a tool
 
+> **Preview.** tabula is not public yet: the links to its repository and
+> releases will not open until it is, and nothing else in these guides
+> needs it. This guide is here so the practice it describes can be read
+> ahead of the release.
+
 Guides 09 to 12 build a knowledge base by hand: pages anchored to code, a
 wrapper, four hooks, five skills, receipts and a ledger. [tabula](https://github.com/misabegovic/tabula)
 is that practice as one program. It keeps the pages, checks them against
@@ -31,8 +36,8 @@ tabula holds what the code should be, in pages a person writes:
 
 ## Install
 
-A tabula release carries cardo, the build of enola it is developed
-against, inside the binary. Download the archive for your platform from
+A tabula release carries cardo inside the binary: a build derived from
+enola by tabula's author, the engine tabula is developed against. Download the archive for your platform from
 the [releases](https://github.com/misabegovic/tabula/releases), check it
 against `SHA256SUMS`, and put `tabula` on your PATH:
 
@@ -47,12 +52,12 @@ v0.0.1 is built for linux-amd64 only. On any other platform, build from a
 clone with `cargo build --release` (the repository pins its Rust
 toolchain); a plain build carries no engine and uses the one on your PATH.
 
-The carried cardo is unpacked into tabula's cache the first time a verb
-needs it, its digest checked, and it is **found last**: `engine.binary` in
-`tabula.config.yml` comes first, then `cardo`, `cardo-current` and `enola`
-on your PATH. An upstream `enola` you installed for the other guides is
-therefore the engine tabula runs, with a warning on every line that
-carries its result. `tabula doctor` says which engine answered and how it
+tabula looks for an engine in this order: `engine.binary` in
+`tabula.config.yml`, then `cardo`, `cardo-current` and `enola` on your
+PATH, and only then the cardo it carries, which it unpacks into its cache
+the first time a verb needs it and checks against its digest. So an
+`enola` you installed for the other guides is the engine tabula runs,
+with a warning on every line that carries its result. `tabula doctor` says which engine answered and how it
 was found (`engine` and `carried` lines); set `engine.binary` to choose
 one, or `engine.carried: never` to leave the carried copy out. tabula
 never installs or upgrades an engine of its own accord.
@@ -116,7 +121,7 @@ rules:
       billing alone talks to the payment gateway.
 ```
 
-That file is plain enola YAML, and upstream enola v0.4.34 lints it clean.
+That file is plain enola YAML, and upstream enola v0.4.35 lints it clean.
 Commit it in the repository and grade it there exactly as
 [constraints in CI](05-constraints-in-ci.md) describes. A sentence with no
 strength word is `ratchet`; `, as a warning.` is `advisory` and
@@ -175,9 +180,10 @@ tabula's hooks and enola's (`enola install --hooks`) do different jobs
 and sit side by side in `.claude/settings.json`: enola's pin a baseline,
 grade the session and turn the first searches toward the graph; tabula's
 hold the agent to the page. Install enola's first. In v0.4.34, running
-`enola install --hooks` again after tabula's are in place adds enola's
-stop hook a second time, inside tabula's stop entry, so the session is
-graded twice per turn; if you re-run it, remove the copy.
+`enola install --hooks` again after tabula's were in place added enola's
+stop hook a second time, inside tabula's stop entry, so the session was
+graded twice per turn. After re-running it, check `.claude/settings.json`
+holds one `enola hook stop`, and remove a copy if it holds two.
 
 ## Which hand-built piece tabula replaces
 
@@ -203,3 +209,7 @@ written small enough to read and run without it.
   tabula in CI, connect a harness over MCP.
 - [taha](14-taha.md): agents that run on a tabula project under a
   mandate, stopping to ask before anything is published.
+
+## Where next
+
+[taha](14-taha.md), in preview: agents run on a tabula project.

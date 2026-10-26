@@ -9,14 +9,16 @@ by CI on every change to this repository.
 ## Install
 
 ```bash
-pip install enola-cli        # the PyPI name; the command is enola
+pipx install enola-cli       # or: uv tool install enola-cli; the command is enola
 enola --version
 ```
 
 `enola` was taken on PyPI, so the project is `enola-cli`; it is the same
-binary as the install script and the GitHub release. `pipx install
-enola-cli` or `uv tool install enola-cli` keeps it out of your project's
-environment. Then the loop from [start here](01-start-here.md):
+binary as the install script and the GitHub release. Install it as a
+tool, outside your project's environment; a bare `pip install` into the
+system Python is refused on current Debian and Ubuntu. Pin it with
+`enola-cli==0.4.35` when you need the release these guides were checked
+against. Then the loop from [start here](01-start-here.md):
 
 ```bash
 enola --explain .
@@ -67,7 +69,9 @@ use_recipe:
 
 Its three rules over `calls` hold on Python as written: the API reaches
 the services only, services never call back into the API, repositories
-never drive the services. In the example, a route that reads a
+never drive the services (`infrastructure-does-not-drive-the-domain`,
+which despite its name forbids infrastructure calling the application
+layer). In the example, a route that reads a
 repository directly breaks the first one:
 
 ```text
@@ -76,8 +80,8 @@ Constraint shop/presentation-reaches-application-only violated: shop/api/orders.
 
 **Its two domain rules read `depends_on`, and Python's extractor writes
 `imports`,** so on a Python tree they are silent whatever the domain
-imports. `via:` names one edge kind exactly. State the domain's law over
-the edge Python has:
+imports. `via:` names one edge kind exactly ([writing laws](04-writing-laws.md#recipes)
+says why). State the domain's law over the edge Python has:
 
 ```yaml
 components:
@@ -138,3 +142,14 @@ Constraint supply/dependencies-are-pinned violated: pkg:pypi/fastapi is measured
 
 For CI, [constraints in CI](05-constraints-in-ci.md) and enola-action
 apply unchanged; the Rubydex step is for Ruby and can be dropped.
+
+## Where next
+
+- [Writing laws](04-writing-laws.md): every sentence, the modes, and the
+  carve-outs.
+- [Constraints in CI](05-constraints-in-ci.md): the check on every pull
+  request.
+- [Rolling out](19-rolling-out.md): adopting it on a codebase that already
+  breaks the laws you want.
+- [Reading a verdict](20-reading-a-verdict.md): every section of the
+  output.

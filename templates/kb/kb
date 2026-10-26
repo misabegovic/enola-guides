@@ -1,0 +1,367 @@
+#!/usr/bin/env python3
+"""kb enola <op>: the knowledge base's one door to enola, as guide 12 shapes it.
+
+Skills call this, not the binary. It knows where the binary, the cluster config
+and the receipts file live, records receipts after a generate, and when one of
+them is absent prints one line saying so and exits 0, so "the graph was not
+asked" stays a different sentence from "the graph agreed".
+
+  generate                       snapshot the cluster, then record every member's receipt
+  receipt [member]               what was recorded
+  diff                           which members moved since their receipts were recorded
+  findings [--repo R] [--all]    the explainers' findings, by member, judged ones hidden
+  judge <signature> accepted|rejected|noise [--reason TEXT] [--landed PAGE]
+  impact <symbol>                the blast radius, from the on-disk snapshot
+  govern <path|page>             what governs a file, or the code a page anchors
+  citations                      every receipt citation in prose, with a verdict
+  baseline pin|show|clear [member]
+  check [member]                 the grade, reported, never gating
+  coverage                       which cross-repository edges resolved
+  doctor [member]                whether enola's hooks fire
+
+Run from the knowledge base's root. Where things are, each overridable:
+  ENOLA_BIN       the binary (default: enola on PATH)
+  KB_CLUSTER      the cluster config (default: enola-cluster.yaml, else cluster.yaml)
+  KB_KNOWLEDGE    the pages (default: wiki); receipts and the ledger live in
+                  <pages>/_state/enola/receipts.json and findings.json
+
+A citation in prose has one shape, the one `citations` parses; anything else
+that starts "receipt <member>@" is reported malformed:
+  receipt <member>@<commit, 7+ hex>, fingerprint <first 4 hex>…<last 4 hex>
+A finding's signature is "<explainer>|<title>", as `findings` prints it.
+"""
+import datetime
+import fnmatch
+import json
+import os
+import pathlib
+import re
+import shutil
+import subprocess
+import sys
+
+CITATION = re.compile(r"receipt ([\w.-]+)@([0-9a-f]{7,40}), fingerprint ([0-9a-f]{4})…([0-9a-f]{4})")
+LOOSE_CITATION = re.compile(r"receipt [\w.-]+@[^\s,)]*(?:, fingerprint [^\s)]*)?")
+VERDICTS = ("accepted", "rejected", "noise")
+
+
+def say(line):
+    print(f"kb enola: {line}")
+
+
+def not_asked(why):
+    say(f"{why}; the graph was not asked")
+    sys.exit(0)
+
+
+def binary():
+    found = os.environ.get("ENOLA_BIN") or shutil.which("enola")
+    if not found or not os.access(found, os.X_OK):
+        not_asked("enola is not installed")
+    return found
+
+
+def cluster_config():
+    named = os.environ.get("KB_CLUSTER")
+    candidates = [named] if named else ["enola-cluster.yaml", "cluster.yaml"]
+    for candidate in candidates:
+        if pathlib.Path(candidate).is_file():
+            return pathlib.Path(candidate).resolve()
+    not_asked(f"no cluster config at {' or '.join(candidates)}")
+
+
+def read_config(path):
+    """The three keys this wrapper reads from a cluster config, without a YAML
+    library: the repos list, output.dir and the providers' names."""
+    repos, providers, output = [], [], None
+    section = None
+    for raw in path.read_text().splitlines():
+        line = raw.split(" #", 1)[0].rstrip()
+        if not line or line.lstrip().startswith("#"):
+            continue
+        if not line.startswith(" ") and not line.startswith("-"):
+            section = line.split(":", 1)[0].strip()
+            continue
+        item = line.strip()
+        if section == "repos" and item.startswith("- "):
+            repos.append(item[2:].strip().strip("\"'"))
+        elif section == "providers" and item.startswith("- name:"):
+            providers.append(item.split(":", 1)[1].strip().strip("\"'"))
+        elif section == "output" and item.startswith("dir:"):
+            output = item.split(":", 1)[1].strip().strip("\"'")
+    members = {}
+    for repo in repos:
+        member = (path.parent / repo).resolve()
+        members[member.name] = member
+    return members, providers, (path.parent / output).resolve() if output else None
+
+
+def state_dir():
+    return pathlib.Path(os.environ.get("KB_KNOWLEDGE", "wiki")) / "_state" / "enola"
+
+
+def load(path, empty):
+    return json.loads(path.read_text()) if path.is_file() else empty
+
+
+def save(path, data):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
+
+
+def snapshot_dir(member, output):
+    """Where a member's snapshot is: its own .enola, else the cluster's output."""
+    own = member / ".enola"
+    if (own / "receipt.json").is_file():
+        return own
+    if output and (output / "receipt.json").is_file():
+        return output
+    return None
+
+
+def head(member):
+    out = subprocess.run(["git", "-C", str(member), "rev-parse", "HEAD"], capture_output=True, text=True)
+    return out.stdout.strip() if out.returncode == 0 else ""
+
+
+def live_receipt(member, output, providers):
+    snap = snapshot_dir(member, output)
+    if not snap:
+        return None
+    receipt = json.loads((snap / "receipt.json").read_text())
+    return {
+        "fingerprint": receipt.get("snapshot_id", "").removeprefix("sha256:"),
+        "git_commit": head(member),
+        "enola_version": receipt.get("enola_version", ""),
+        "providers": sorted(providers),
+    }
+
+
+def run(argv, check_exit=True):
+    """Runs the binary with its output passed through; returns its exit code."""
+    sys.stdout.flush()
+    code = subprocess.run(argv).returncode
+    if check_exit and code != 0:
+        sys.exit(code)
+    return code
+
+
+def op_generate(enola, config, args):
+    members, providers, output = read_config(config)
+    run([enola, "--generate", "--no-dashboard", str(config)])
+    receipts_path = state_dir() / "receipts.json"
+    receipts = load(receipts_path, {"repos": {}})
+    for label, member in members.items():
+        receipt = live_receipt(member, output, providers)
+        if receipt is None:
+            say(f"{label}: no receipt after the generate, not recorded")
+            continue
+        receipts.setdefault("repos", {})[label] = receipt
+        say(f"{label}: recorded {receipt['fingerprint'][:4]}…{receipt['fingerprint'][-4:]} at {receipt['git_commit'][:7] or 'no commit'}")
+    save(receipts_path, receipts)
+
+
+def recorded():
+    path = state_dir() / "receipts.json"
+    if not path.is_file():
+        not_asked(f"no receipts at {path}")
+    return json.loads(path.read_text()).get("repos", {})
+
+
+def op_receipt(enola, config, args):
+    repos = recorded()
+    if args:
+        if args[0] not in repos:
+            not_asked(f"no receipt recorded for {args[0]}")
+        repos = {args[0]: repos[args[0]]}
+    print(json.dumps(repos, indent=2, sort_keys=True))
+
+
+def op_diff(enola, config, args):
+    repos = recorded()
+    members, providers, output = read_config(config)
+    for label in sorted(set(members) | set(repos)):
+        was = repos.get(label)
+        now = live_receipt(members[label], output, providers) if label in members else None
+        if was is None:
+            print(f"{label}: no receipt recorded")
+        elif label not in members:
+            print(f"{label}: recorded, but not a member of {config.name}")
+        elif now is None:
+            print(f"{label}: no live snapshot to compare; run kb enola generate")
+        else:
+            moved = [key for key in ("fingerprint", "git_commit", "enola_version", "providers") if was.get(key) != now.get(key)]
+            print(f"{label}: moved ({', '.join(moved)})" if moved else f"{label}: unchanged")
+
+
+def snapshot_files(config):
+    members, _, output = read_config(config)
+    for member in members.values():
+        snap = snapshot_dir(member, output)
+        if snap and (snap / "insights.json").is_file():
+            return snap
+    not_asked("no snapshot on disk; run kb enola generate")
+
+
+def op_findings(enola, config, args):
+    only = args[args.index("--repo") + 1] if "--repo" in args else None
+    show_all = "--all" in args
+    snap = snapshot_files(config)
+    repo_of = {}
+    with open(snap / "facts.jsonl") as facts:
+        for line in facts:
+            fact = json.loads(line)
+            repo_of.setdefault(fact.get("name"), fact.get("repo"))
+    ledger = load(state_dir() / "findings.json", {"findings": {}}).get("findings", {})
+    for finding in json.loads((snap / "insights.json").read_text()):
+        signature = f"{finding.get('source')}|{finding.get('title')}"
+        repos = sorted({repo_of.get(e.get("fact")) for e in finding.get("evidence") or [] if repo_of.get(e.get("fact"))}) or ["cluster"]
+        if only and only not in repos:
+            continue
+        judged = ledger.get(signature)
+        if judged and not show_all:
+            continue
+        mark = f"  [{judged['verdict']}]" if judged else ""
+        print(f"{finding.get('confidence', 0):.2f}  {','.join(repos)}  {signature}{mark}")
+
+
+def op_judge(enola, config, args):
+    if len(args) < 2 or args[1] not in VERDICTS:
+        say(f"usage: kb enola judge <signature> {'|'.join(VERDICTS)} [--reason TEXT] [--landed PAGE]")
+        sys.exit(2)
+    entry = {"verdict": args[1], "at": datetime.date.today().isoformat()}
+    for flag, key in (("--reason", "reason"), ("--landed", "landed")):
+        if flag in args:
+            entry[key] = args[args.index(flag) + 1]
+    path = state_dir() / "findings.json"
+    ledger = load(path, {"findings": {}})
+    ledger.setdefault("findings", {})[args[0]] = entry
+    save(path, ledger)
+    say(f"{args[1]}: {args[0]}")
+
+
+def op_impact(enola, config, args):
+    if not args:
+        say("usage: kb enola impact <symbol>")
+        sys.exit(2)
+    run([enola, "impact", *args, str(config)])
+
+
+def frontmatter(page):
+    text = page.read_text()
+    if not text.startswith("---\n"):
+        return ""
+    return text[4:text.find("\n---", 4)]
+
+
+def op_govern(enola, config, args):
+    if not args:
+        say("usage: kb enola govern <path or page>")
+        sys.exit(2)
+    target = pathlib.Path(args[0])
+    if target.suffix == ".md" and target.is_file():
+        globs = re.findall(r"^\s+- (\S+)$", frontmatter(target).split("governs:", 1)[1], re.M) if "governs:" in frontmatter(target) else []
+        if not globs:
+            say(f"{target} anchors no code (no enola_intent governs)")
+            return
+        print(f"{target} governs:")
+        for glob in globs:
+            print(f"  {glob}")
+        return
+    pages = []
+    for page in sorted(pathlib.Path(os.environ.get("KB_KNOWLEDGE", "wiki")).rglob("*.md")):
+        block = frontmatter(page)
+        if "governs:" in block:
+            globs = re.findall(r"^\s+- (\S+)$", block.split("governs:", 1)[1].split("\n  decisions:", 1)[0], re.M)
+            if any(fnmatch.fnmatch(args[0], g) or fnmatch.fnmatch(args[0], g.removesuffix("/**") + "/*") for g in globs):
+                pages.append(page)
+    if pages:
+        print(f"{args[0]} is governed by:")
+        for page in pages:
+            print(f"  {page}")
+    else:
+        print(f"{args[0]}: no page governs it")
+    print()
+    run([enola, "plan", "-paths", args[0], str(config)], check_exit=False)
+
+
+def op_citations(enola, config, args):
+    repos = recorded()
+    counts = {"verified": 0, "stale": 0, "malformed": 0}
+    for page in sorted(pathlib.Path(os.environ.get("KB_KNOWLEDGE", "wiki")).rglob("*.md")):
+        if "_state" in page.parts:
+            continue
+        for number, line in enumerate(page.read_text().splitlines(), 1):
+            for loose in LOOSE_CITATION.finditer(line):
+                match = CITATION.fullmatch(loose.group(0))
+                if not match:
+                    verdict = "malformed"
+                else:
+                    label, commit, first, last = match.groups()
+                    receipt = repos.get(label) or {}
+                    fingerprint = receipt.get("fingerprint", "")
+                    current = receipt.get("git_commit", "").startswith(commit) and fingerprint[:4] == first and fingerprint[-4:] == last
+                    verdict = "verified" if current else "stale"
+                counts[verdict] += 1
+                print(f"{verdict:9} {page}:{number}  {loose.group(0)}")
+    print(", ".join(f"{n} {v}" for v, n in counts.items()))
+
+
+def op_baseline(enola, config, args):
+    if not args or args[0] not in ("pin", "show", "clear"):
+        say("usage: kb enola baseline pin|show|clear [member]")
+        sys.exit(2)
+    run([enola, "baseline", args[0], member_or_config(config, args[1:])])
+
+
+def member_or_config(config, args):
+    if not args:
+        return str(config)
+    members, _, _ = read_config(config)
+    if args[0] not in members:
+        not_asked(f"no member {args[0]} in {config.name}")
+    return str(members[args[0]])
+
+
+def op_check(enola, config, args):
+    code = run([enola, "check", member_or_config(config, args)], check_exit=False)
+    if code == 1:
+        say("the change introduced a regression; reported, not gating")
+    elif code == 3:
+        say("not asked: the snapshots are not comparable (a different enola or provider set); re-pin and regenerate")
+    elif code != 0:
+        say(f"not asked: enola check could not run (exit {code}); with no pinned baseline, pin one with kb enola baseline pin")
+    sys.exit(0)
+
+
+def op_coverage(enola, config, args):
+    run([enola, "coverage", str(config)])
+
+
+def op_doctor(enola, config, args):
+    run([enola, "doctor", *([member_or_config(config, args)] if args else [])])
+
+
+OPS = {
+    "generate": op_generate, "receipt": op_receipt, "diff": op_diff, "findings": op_findings,
+    "judge": op_judge, "impact": op_impact, "govern": op_govern, "citations": op_citations,
+    "baseline": op_baseline, "check": op_check, "coverage": op_coverage, "doctor": op_doctor,
+}
+
+
+def main(argv):
+    if len(argv) < 2 or argv[0] != "enola" or argv[1] not in OPS:
+        print(__doc__.strip())
+        return 0 if argv[1:2] in (["help"], ["--help"]) or argv in ([], ["enola"]) else 2
+    op = argv[1]
+    if op == "judge":
+        OPS[op](None, None, argv[2:])
+        return 0
+    config = cluster_config()
+    enola = None if op in ("receipt", "citations", "findings", "diff") else binary()
+    OPS[op](enola, config, argv[2:])
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

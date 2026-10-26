@@ -1,7 +1,9 @@
 #!/bin/bash
 # Stop: block the end of the turn once when this turn pushed without a
-# grade, and once when code moved under decision records and no record
-# moved. Reads the per-session record written by record.sh.
+# grade, and once when code moved in a governed repository and no decision
+# record moved. Reads the per-session record written by record.sh, which
+# also decides what governed means (ENOLA_DECISION_DIRS); a repository with
+# no decision records is never asked for one.
 set -u
 state="${TMPDIR:-/tmp}/intent-first-$(id -u)"
 input=$(cat 2>/dev/null || true)

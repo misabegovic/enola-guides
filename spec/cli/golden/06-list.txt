@@ -1,6 +1,7 @@
 $ enola-guides list
 exit 0
 --- stdout
+guides/00-concepts	What enola is, and the words these guides use
 guides/01-start-here	Start here: the first useful answer in ten minutes
 guides/02-rails	A Rails application
 guides/03-ember	An Ember application
@@ -10,8 +11,8 @@ guides/06-hooks-and-agents	Hooks and agents
 guides/07-providers	Providers
 guides/08-beyond-one-repo	Beyond one repository
 guides/09-a-knowledge-base-with-enola	A knowledge base with enola
-guides/10-hooks	Hooks: the graph at the moments that matter
-guides/11-the-skills-as-they-run	The skills, as they run
+guides/10-hooks	Knowledge-base hooks: the graph at the moments that matter
+guides/11-the-skills-as-they-run	The knowledge-base skills, as they run
 guides/12-the-wrapper	The wrapper
 guides/13-tabula	tabula: the knowledge base, kept by a tool
 guides/14-taha	taha: agents under a mandate
@@ -19,6 +20,8 @@ guides/15-python	A Python service
 guides/16-typescript	A TypeScript or JavaScript service
 guides/17-go	A Go service
 guides/18-rust	A Rust service
+guides/19-rolling-out	Rolling out
+guides/20-reading-a-verdict	Reading a verdict
 examples/ember-app	ember-app
 examples/go-service	A Go service
 examples/knowledge-base	A knowledge base with enola, minimal
@@ -74,6 +77,7 @@ recipes/tenant-foreign-key	recipe tenant-foreign-key, 1 rule
 recipes/README	Recipes
 templates/constraints-starter	a first set of laws for a Rails application, one file each
 templates/enola-check	the CI check that grades a pull request and renders the comment
+templates/kb	kb enola: the knowledge base's wrapper the five knowledge-base skills call
 templates/enola-cluster	A cluster: every repository's facts land in one union graph, labelled by
 
 --- stderr

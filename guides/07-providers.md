@@ -19,9 +19,10 @@ providers:
     expected_version: "0.1.0"
 ```
 
-An external provider is an executable the seam runs twice: once with
-`--version`, once with the repository path, reading JSONL facts from its
-stdout and a one-line census from its stderr. A provider with no
+enola runs an external provider twice: once with `--version`, to check
+the pin, and once with the repository path. The provider prints its facts
+as JSONL on stdout and one line on stderr saying what it read and what it
+skipped, its census. A provider with no
 `command` is one the binary carries itself: `rubydex` and `prism`. An
 `expected_version` pins what the provider must answer, and a provider that
 answers anything else is skipped by name; pin a script to its own
@@ -36,7 +37,7 @@ fail the snapshot, it must be visible.
 receiver is the enclosing class, and `new` on a written constant. Named
 with no `command` it runs inside the binary and reads the index Rubydex
 built in the same run, so it needs no Ruby. The reference script,
-`examples/providers/ruby/prism/enola_prism_provider.rb` in the enola tree,
+[`enola_prism_provider.rb`](https://github.com/enola-labs/enola/tree/main/examples/providers/ruby/prism) in enola's repository,
 reads with Ruby's own parser on a Ruby 3.3 or newer; pin it to
 `expected_version: "0.2.0"`. The two are close, not identical: the
 built-in also writes the calls a class body makes (`validates`,
@@ -63,7 +64,8 @@ refuses by name without it.
 
 ## Signatures and the autoload map
 
-Two more reference providers in enola's `examples/providers/ruby/` read
+Two more reference providers in enola's
+[`examples/providers/ruby/`](https://github.com/enola-labs/enola/tree/main/examples/providers/ruby) read
 what a Ruby tree declares rather than what it runs. Each is a plain-Ruby
 script, pinned to its own `PROVIDER_VERSION` (`0.1.0` for both):
 
@@ -98,7 +100,7 @@ providers:
 Provider facts enter the same cache as the extractors' facts, so a
 provider whose inputs did not move is not run again. A script whose
 output partitions by file says so with `files: per-file` and the
-`extensions:` it reads; the seam then hands it only the files that
+`extensions:` it reads; enola then hands it only the files that
 changed and keeps the rest. A provider that reads across files must not
 declare that, because the cache would serve facts computed against a tree
 that has since changed. The built-in Rubydex provider keeps one entry for
@@ -131,8 +133,8 @@ application: a booted-Rails capture (the final route table, reflected
 associations, table bindings) and a query-counter capture (database
 queries per frame under a spec run). Facts carry `runtime-observed` and
 the channel they came from, and the engine cross-links them to the
-measured ones. `examples/providers/ruby/runtime/capture_spec_queries.rb`
-in the enola tree is the runner for the query capture: require it from
+measured ones. [`capture_spec_queries.rb`](https://github.com/enola-labs/enola/tree/main/examples/providers/ruby/runtime) in enola's
+repository is the runner for the query capture: require it from
 `spec_helper`, run the suite, and `.enola-runtime/queries.json` is written
 with one frame per example. A `must_keep_budget metric: :queries, max: N`
 law then verdicts on it, and refuses by name until a capture exists.
@@ -142,8 +144,17 @@ law then verdicts on it, and refuses by name until a capture exists.
 A provider is any program that prints JSONL facts in the store's schema
 with a `resolution_level` on every fact and a prefix on every name so it
 cannot collide with an extractor's identity, plus the one census line.
-The Prism and eslint scripts in enola's `examples/providers/` are the
-reference; each is under two hundred lines. Give it a `PROVIDER_VERSION`
+The Prism and eslint scripts in enola's
+[`examples/providers/`](https://github.com/enola-labs/enola/tree/main/examples/providers) are the reference; each is under two hundred lines. Give it a `PROVIDER_VERSION`
 it prints for `--version`, raise it whenever its facts change, and pin
 that version in the configuration: a pin that no longer matches skips the
 provider by name rather than mixing two versions' facts in one graph.
+
+## Where next
+
+- [A Rails application](02-rails.md): the Ruby pair in context, and the
+  laws that need resolved ancestry.
+- [Writing laws](04-writing-laws.md#when-a-law-refuses): what a law says
+  when the provider it needs did not run.
+- [Reading a verdict](20-reading-a-verdict.md#partial): why a provider
+  present on one side only makes the verdict partial.

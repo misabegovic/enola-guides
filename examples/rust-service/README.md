@@ -19,7 +19,7 @@ and the `supply-chain` recipe. What breaks:
 - `shop/presentation-reaches-application-only`: `src/web/mod.rs` (`list_recent` reads the store).
 - `the-domain-imports-no-storage`: `src/order/pricing.rs` (uses the store).
 
-`supply-chain` is bound and, in enola v0.4.34, silent about `axum = "0.7"`, which Cargo reads as a caret range; [the guide](../../guides/18-rust.md#where-v0434-reads-less) says why, and `EXPECTED` records it so CI notices when enola reads it.
+`supply-chain` is bound and, in enola v0.4.35, silent about `axum = "0.7"`, which Cargo reads as a caret range; [the guide](../../guides/18-rust.md#where-v0435-reads-less) says why, and `EXPECTED` records it so CI notices when enola reads it.
 
 ```bash
 cd examples/rust-service

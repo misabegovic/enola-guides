@@ -1,7 +1,7 @@
 # A Rust service
 
 What enola measures in a Rust crate, the laws a Rust team states, and two
-places where v0.4.34 reads less than the code says. The worked example is
+places where v0.4.35 reads less than the code says. The worked example is
 [`examples/rust-service`](../examples/rust-service): an Axum service in
 four modules that breaks two laws on purpose, snapshotted by CI on every
 change to this repository.
@@ -15,7 +15,7 @@ curl -fsSL https://raw.githubusercontent.com/enola-labs/enola/main/install.sh | 
 enola --version
 ```
 
-or `pip install enola-cli`, or a binary from the
+or `pipx install enola-cli`, or a binary from the
 [releases](https://github.com/enola-labs/enola/releases). Then the loop
 from [start here](01-start-here.md).
 
@@ -49,8 +49,9 @@ Constraint shop/presentation-reaches-application-only violated: src/web.list_rec
 ```
 
 **The recipe's two domain rules read `depends_on`, and Rust's extractor
-writes `imports`,** so they are silent on a Rust crate. State the
-domain's law over the `use` edge:
+writes `imports`,** so they are silent on a Rust crate
+([writing laws](04-writing-laws.md#recipes) says why). State the domain's
+law over the `use` edge:
 
 ```yaml
 components:
@@ -71,7 +72,7 @@ rules:
 Constraint the-domain-imports-no-storage violated: src/order -> crate::store::latest_total -> src/store via imports
 ```
 
-## Where v0.4.34 reads less
+## Where v0.4.35 reads less
 
 - **A nested router built inline keeps its bare paths.**
   `.nest("/orders", Router::new().route("/recent", …))` records
@@ -85,3 +86,14 @@ Constraint the-domain-imports-no-storage violated: src/order -> crate::store::la
   crate, which pins every dependency whatever its constraint says. The
   example keeps the bare `"0.7"`, and its `EXPECTED` file records that
   the law is silent, so CI notices the day enola reads it.
+
+## Where next
+
+- [Writing laws](04-writing-laws.md): every sentence, the modes, and the
+  carve-outs.
+- [Constraints in CI](05-constraints-in-ci.md): the check on every pull
+  request.
+- [Rolling out](19-rolling-out.md): adopting it on a codebase that already
+  breaks the laws you want.
+- [Reading a verdict](20-reading-a-verdict.md): every section of the
+  output.

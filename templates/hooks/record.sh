@@ -3,12 +3,20 @@
 # the stop-time debt hook can account for it. With "reset" as the first
 # argument (UserPromptSubmit): a new user message begins a new piece of
 # work, so clear the record and the gate's acknowledgements.
+#
+# A repository is governed when one of ENOLA_DECISION_DIRS (space-separated,
+# relative to its root; default "wiki docs/decisions docs/adrs") exists in
+# it. A markdown file under one of them is a decision record; any other file
+# in a governed repository is code. A file in a repository with none of
+# those directories is not recorded, so the debt hook never asks it for a
+# record it has nowhere to keep.
 set -u
 state="${TMPDIR:-/tmp}/intent-first-$(id -u)"
 mkdir -p "$state"
 input=$(cat 2>/dev/null || true)
 sid=$(jq -r '.session_id // "nosession"' <<<"$input" 2>/dev/null)
 turn="$state/${sid}.turn"
+dirs="${ENOLA_DECISION_DIRS:-wiki docs/decisions docs/adrs}"
 
 if [ "${1:-}" = "reset" ]; then
   rm -f "$state/${sid}"-*.ack "$turn" "$state/${sid}.debt-blocked" "$state/${sid}.push-blocked"
@@ -30,8 +38,11 @@ file=$(jq -r '.tool_input.file_path // .tool_response.filePath // empty' <<<"$in
 [ -n "$file" ] || exit 0
 top=$(git -C "$(dirname "$file")" rev-parse --show-toplevel 2>/dev/null) || exit 0
 rel="${file#"$top"/}"
-case "$rel" in
-  wiki/*.md|docs/decisions/*.md|docs/adrs/*.md) record "spec	$rel" ;;
-  *) record "code	$rel" ;;
-esac
+governed=""
+for dir in $dirs; do
+  [ -d "$top/$dir" ] || continue
+  governed=1
+  case "$rel" in "$dir"/*.md) record "spec	$rel"; exit 0 ;; esac
+done
+[ -z "$governed" ] || record "code	$rel"
 exit 0

@@ -7,4 +7,6 @@ narrowing to the tables the law is about, so a table without the column is
 never asked.
 
 Declaration under `enola/constraints/`. Copy it, run `enola constraints lint .`,
-then `enola --generate . && enola check .`.
+then `enola --generate . && enola constraints ledger .` for each law's
+count of breaches. With a baseline pinned before the copy (`enola baseline pin .`),
+`enola check .` lists each breach under `Newly declared`.

@@ -1,8 +1,9 @@
 # Beyond one repository
 
-A product is rarely one repository. enola indexes a cluster into one
-union graph, links the seams between its members, and lets a law speak
-about them.
+A product is rarely one repository. enola indexes a cluster, several
+repositories, into one union graph, links the seams between them (a
+client's call matched to the route it reaches, a topic one publishes and
+another consumes), and lets a law speak about them.
 
 ## The cluster
 
@@ -20,7 +21,10 @@ them is indexed as a cluster without being asked: `--generate` and the
 `cluster.yaml` there, and link them (`--no-cluster` indexes the folder as
 one repository instead). Paths in the file resolve relative to it. When
 the members do not share a folder, or the cluster carries settings of its
-own, write the file yourself:
+own, write the file yourself. Any name works, since you pass its path;
+these guides call it `enola-cluster.yaml`, and
+[`templates/enola-cluster.yaml`](../templates/enola-cluster.yaml) is one
+to copy:
 
 ```yaml
 # enola-cluster.yaml
@@ -152,6 +156,14 @@ same enola, the same providers and the same ignore globs; a member that
 dropped out makes the pair incomparable and `check` declines, which is
 the right answer when a whole repository's verdicts went quiet at once.
 
+In CI that means checking out every member side by side, at the commits
+under test, before generating; the [CI template](05-constraints-in-ci.md)
+grades one repository, and these guides have no tested recipe for a
+cluster yet. For an agent, `enola install --hooks` in the cluster's folder
+installs only the steering hooks, since a baseline needs one repository
+([hooks and agents](06-hooks-and-agents.md#the-hooks)); install inside
+each member whose changes should be graded.
+
 ## The history
 
 Every snapshot appends a revision to the architecture history under
@@ -164,6 +176,15 @@ through a directory store and `enola history pull` imports what other
 machines pushed, so a team's machines agree on the past; with
 `history.shared_dir` in the configuration the store can be left off both,
 and `blame` and `diff` answer over the shared record. `history gc
---keep-last N` prints what it would prune and prunes only with `--apply`.
+--keep-last N` prints what it would prune from the shared store and
+prunes only with `--apply`; `enola gc` does the same for the local one.
 `history.dir` moves the local record, for instance into a directory you
 commit.
+
+## Where next
+
+- [`examples/laws/cluster-laws`](../examples/laws/cluster-laws) and
+  [`routes-have-consumers`](../examples/laws/routes-have-consumers): the
+  laws above, ready to copy.
+- [A knowledge base with enola](09-a-knowledge-base-with-enola.md): a
+  twenty-repository cluster with decision pages anchored to its code.
