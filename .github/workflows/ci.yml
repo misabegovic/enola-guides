@@ -101,6 +101,24 @@ jobs:
           ruby-version: "3.3"
       - run: script/test-check-template
 
+  hooks:
+    name: The hook templates gate, record and block as guide 10 says
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - run: script/test-hooks
+
+  kb:
+    name: The knowledge base's wrapper runs against its example
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - run: script/test-kb
+
   links:
     name: Relative links resolve
     runs-on: ubuntu-latest

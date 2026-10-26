@@ -1,9 +1,15 @@
 ---
 name: enola-ingest-check
-description: Use while ingesting a source into the knowledge base; checks every structural claim against the graph while the source is open, and routes changed paths to the pages that govern them
+description: Use while ingesting a source into the knowledge base; checks every structural claim against the graph while the source is open, and routes changed paths to the pages that govern them; knowledge-base track, needs the kb wrapper
 ---
 
 # enola-ingest-check: verify the claim while the source is open
+
+Needs the knowledge base's `kb` wrapper on PATH: `enola-guides copy
+templates/kb` writes it to `bin/kb`, and guide 12 describes it. Run from
+the knowledge base's root, beside its `enola-cluster.yaml`. Where `kb` is
+absent, say the graph was not asked; never fill its answers in from
+memory.
 
 1. When a page is about to state a structural fact (a stack, a public
    surface, a route, a table, a count): `query_facts` for the fact,

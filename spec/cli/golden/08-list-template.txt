@@ -3,6 +3,7 @@ exit 0
 --- stdout
 templates/constraints-starter	a first set of laws for a Rails application, one file each
 templates/enola-check	the CI check that grades a pull request and renders the comment
+templates/kb	kb enola: the knowledge base's wrapper the five knowledge-base skills call
 templates/enola-cluster	A cluster: every repository's facts land in one union graph, labelled by
 
 --- stderr

@@ -1,0 +1,80 @@
+#!/bin/bash
+# Feeds templates/hooks the JSON Claude Code sends and checks what each
+# decides: a repository with no decision records is never gated and never
+# asked for a record; a governed one is gated once per piece of work, and a
+# turn that moved its code and none of its records is blocked once; a push
+# with no grade is blocked once; a user message re-arms all of it. Needs jq.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+hooks="$PWD/templates/hooks"
+
+work=$(mktemp -d)
+trap 'rm -rf "$work"' EXIT
+export TMPDIR="$work/tmp"
+mkdir -p "$TMPDIR"
+
+mkdir -p "$work/plain/src" "$work/governed/src" "$work/governed/docs/decisions"
+for repo in plain governed; do
+  git -C "$work/$repo" init -q
+done
+
+fail() { echo "test-hooks: $1" >&2; exit 1; }
+
+# hook <script> <json> [arg]: runs a hook, leaving its exit code in $code
+# and its stderr in $err.
+hook() {
+  set +e
+  err=$(printf '%s' "$2" | bash "$hooks/$1" ${3:+"$3"} 2>&1 >/dev/null)
+  code=$?
+  set -e
+}
+write() { printf '{"session_id":"%s","tool_name":"Write","tool_input":{"file_path":"%s"}}' "$1" "$2"; }
+bash_call() { printf '{"session_id":"%s","tool_name":"Bash","tool_input":{"command":"%s"}}' "$1" "$2"; }
+session() { printf '{"session_id":"%s"}' "$1"; }
+
+# A repository with no decision records.
+hook intent-first-gate.sh "$(write s1 "$work/plain/src/app.py")"
+[ "$code" -eq 0 ] || fail "the gate blocked a write in a repository with no decision records"
+hook record.sh "$(write s1 "$work/plain/src/app.py")"
+hook stop-debt.sh "$(session s1)"
+[ "$code" -eq 0 ] || fail "the debt hook asked an ungoverned repository for a record: $err"
+
+# A governed repository: the first write is gated once.
+hook intent-first-gate.sh "$(write s2 "$work/governed/src/app.py")"
+[ "$code" -eq 2 ] || fail "the gate let the first write into a governed repository through"
+grep -q 'intent-first gate (governed)' <<<"$err" || fail "the gate's message does not name the repository"
+hook intent-first-gate.sh "$(write s2 "$work/governed/src/app.py")"
+[ "$code" -eq 0 ] || fail "the gate blocked the retry"
+
+# Code moved and no record did: blocked once.
+hook record.sh "$(write s2 "$work/governed/src/app.py")"
+hook stop-debt.sh "$(session s2)"
+[ "$code" -eq 2 ] || fail "the debt hook let code move with no record moving"
+grep -q 'src/app.py' <<<"$err" || fail "the debt hook does not name the file"
+hook stop-debt.sh "$(session s2)"
+[ "$code" -eq 0 ] || fail "the debt hook blocked twice in one turn"
+
+# A user message re-arms; a record moving with the code clears the debt.
+hook record.sh "$(session s2)" reset
+hook record.sh "$(write s2 "$work/governed/src/app.py")"
+hook record.sh "$(write s2 "$work/governed/docs/decisions/0001-app.md")"
+hook stop-debt.sh "$(session s2)"
+[ "$code" -eq 0 ] || fail "the debt hook blocked a turn that moved its record: $err"
+hook intent-first-gate.sh "$(write s2 "$work/governed/src/app.py")"
+[ "$code" -eq 2 ] || fail "a user message did not re-arm the gate"
+
+# ENOLA_DECISION_DIRS names the record directories.
+ENOLA_DECISION_DIRS=adr hook intent-first-gate.sh "$(write s3 "$work/governed/src/app.py")"
+[ "$code" -eq 0 ] || fail "the gate ignored ENOLA_DECISION_DIRS"
+
+# A push with no grade is blocked once; a grade clears it.
+hook record.sh "$(bash_call s4 "git push origin main")"
+hook stop-debt.sh "$(session s4)"
+[ "$code" -eq 2 ] || fail "a push with no grade went through"
+grep -q 'push without a grade' <<<"$err" || fail "the push block does not say why"
+hook record.sh "$(session s4)" reset
+hook record.sh "$(bash_call s4 "enola check . && git push")"
+hook stop-debt.sh "$(session s4)"
+[ "$code" -eq 0 ] || fail "a graded push was blocked: $err"
+
+echo "test-hooks: ok"

@@ -116,8 +116,9 @@ def build():
     for path in sorted(p for p in modes if p.startswith("recipes/") and p.endswith(".yaml")):
         name = pathlib.Path(path).stem
         items.append(item(f"recipes/{name}", "recipe", recipe_title(path), path, "enola/recipes", [(path, pathlib.Path(path).name)], modes))
+    # The recipes' README is prose about them, so it lists as a guide, not as a recipe.
     if "recipes/README.md" in modes:
-        items.append(item("recipes/README", "recipe", first_heading("recipes/README.md") or "Recipes", "recipes/README.md", ".", [("recipes/README.md", "RECIPES.md")], modes))
+        items.append(item("recipes/README", "guide", first_heading("recipes/README.md") or "Recipes", "recipes/README.md", ".", [("recipes/README.md", "RECIPES.md")], modes))
 
     starter = sorted(p for p in modes if p.startswith("templates/constraints-starter/"))
     if starter:
@@ -126,6 +127,9 @@ def build():
     if "templates/enola-check.sh" in modes:
         pairs = [(p, pathlib.Path(p).name) for p in ("templates/enola-check.sh", "templates/enola-findings.rb") if p in modes]
         items.append(item("templates/enola-check", "template", "the CI check that grades a pull request and renders the comment", "templates/enola-check.sh", "ci", pairs, modes))
+    if "templates/kb/kb" in modes:
+        items.append(item("templates/kb", "template", "kb enola: the knowledge base's wrapper the five knowledge-base skills call", "templates/kb/kb", "bin",
+                          [("templates/kb/kb", "kb")], modes))
     if "templates/enola-cluster.yaml" in modes:
         items.append(item("templates/enola-cluster", "template", first_comment("templates/enola-cluster.yaml") or "a cluster configuration", "templates/enola-cluster.yaml", ".",
                           [("templates/enola-cluster.yaml", "enola-cluster.yaml")], modes))

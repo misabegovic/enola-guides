@@ -1,8 +1,14 @@
 #!/bin/bash
 # PreToolUse on Edit|Write|MultiEdit: block the first write into each
-# repository per piece of work, once, with the governing pages and the
-# pre-edit contract on stderr. The retry proceeds; the gate forces the
+# governed repository per piece of work, once, with the governing pages and
+# the pre-edit contract on stderr. The retry proceeds; the gate forces the
 # reading, never the verdict. Re-armed by record.sh on every user message.
+#
+# Governed means what it means to record.sh: one of ENOLA_DECISION_DIRS
+# (default "wiki docs/decisions docs/adrs") exists at the repository's
+# root. A repository with none is not gated. Needs jq, and enola on PATH
+# for the contract (without it the block says so and still lets the retry
+# through).
 #
 # Where a shell-command classifier would go: a Bash tool call whose text
 # carries a write shape (sed -i, a redirect, tee, cp or mv into the tree,
@@ -15,6 +21,11 @@ file=$(jq -r '.tool_input.file_path // empty' <<<"$input" 2>/dev/null)
 [ -n "$file" ] || exit 0
 
 top=$(git -C "$(dirname "$file")" rev-parse --show-toplevel 2>/dev/null) || exit 0
+governed=""
+for dir in ${ENOLA_DECISION_DIRS:-wiki docs/decisions docs/adrs}; do
+  [ -d "$top/$dir" ] && governed=1
+done
+[ -n "$governed" ] || exit 0
 case "$file" in
   "$top"/.enola/*|"$top"/wiki/_views/*|"$top"/wiki/_state/*) exit 0 ;;
 esac

@@ -1,9 +1,15 @@
 ---
 name: enola-deepdive
-description: Use before shaping or planning a change; asks the graph three questions (impact, governing decisions, existing findings) and writes the answers into the plan with the receipt they came from
+description: Use before shaping or planning a change; asks the graph three questions (impact, governing decisions, existing findings) and writes the answers into the plan with the receipt they came from; knowledge-base track, needs the kb wrapper
 ---
 
 # enola-deepdive: ask the graph before writing the plan
+
+Needs the knowledge base's `kb` wrapper on PATH: `enola-guides copy
+templates/kb` writes it to `bin/kb`, and guide 12 describes it. Run from
+the knowledge base's root, beside its `enola-cluster.yaml`. Where `kb` is
+absent, say the graph was not asked; never fill its answers in from
+memory.
 
 1. Name the symbols the change would touch. For each:
    `kb enola impact <Symbol>` (or `impact_analysis` over MCP). Record fan-in,
