@@ -21,7 +21,7 @@ jobs:
           persist-credentials: false
       - name: The tag names the version
         run: test "${GITHUB_REF_NAME#v}" = "$(cat VERSION)"
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
           go-version: stable
       - uses: actions/setup-node@v7
