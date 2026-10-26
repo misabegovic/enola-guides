@@ -6,4 +6,4 @@ wrote agents/skills/enola/SKILL.md
 --- stderr
 
 --- files
-agents/skills/enola/SKILL.md 644 a0ea16d06fa57761
+agents/skills/enola/SKILL.md 644 d302ec1eb750d29e

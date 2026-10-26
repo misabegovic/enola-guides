@@ -1,9 +1,15 @@
 ---
 name: enola-citation-hygiene
-description: Use during grooming; gives every receipt citation in prose a verdict against the committed receipts and sweeps the finding ledger for judgments the code has moved past
+description: Use during grooming; gives every receipt citation in prose a verdict against the committed receipts and sweeps the finding ledger for judgments the code has moved past; knowledge-base track, needs the kb wrapper
 ---
 
 # enola-citation-hygiene: every citation gets a verdict
+
+Needs the knowledge base's `kb` wrapper on PATH: `enola-guides copy
+templates/kb` writes it to `bin/kb`, and guide 12 describes it. Run from
+the knowledge base's root, beside its `enola-cluster.yaml`. Where `kb` is
+absent, say the graph was not asked; never fill its answers in from
+memory.
 
 1. `kb enola citations`: each receipt citation in prose is verified, stale
    (the digest moved) or malformed.

@@ -1,0 +1,67 @@
+#!/bin/bash
+# Runs templates/kb/kb, the knowledge base's wrapper, against a copy of
+# examples/knowledge-base and the two examples it clusters, with the pinned
+# enola: the committed citations verify, a generate records a receipt per
+# member, the moved receipts turn the citations stale, a judged finding is
+# hidden, a page names the code it anchors and a file the page governing
+# it, the grade reports and exits 0, and an absent binary or config is one
+# line and exit 0.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+here=$PWD
+export ENOLA_BIN="${ENOLA:-$(script/fetch-enola)}"
+kb="$here/templates/kb/kb"
+
+work=$(mktemp -d)
+trap 'rm -rf "$work"' EXIT
+export HOME="$work/home"
+mkdir -p "$HOME"
+for name in knowledge-base rails-shop ember-app; do
+  cp -r "examples/$name" "$work/$name"
+  (cd "$work/$name" && git init -q && git add -A && git -c user.name=fixture -c user.email=fixture@example.invalid commit -qm init)
+done
+cd "$work/knowledge-base"
+
+fail() { echo "test-kb: $1" >&2; exit 1; }
+expect() { grep -q -- "$2" <<<"$1" || { echo "$1" >&2; fail "$3"; }; }
+
+out=$("$kb" enola citations)
+expect "$out" "2 verified, 0 stale, 0 malformed" "the committed citations do not verify"
+
+out=$("$kb" enola generate 2>&1)
+for member in rails-shop ember-app knowledge-base; do
+  expect "$out" "kb enola: $member: recorded" "generate did not record $member"
+done
+out=$("$kb" enola diff)
+expect "$out" "rails-shop: unchanged" "diff does not see the receipt just recorded"
+out=$("$kb" enola citations)
+expect "$out" "0 verified, 2 stale, 0 malformed" "citations did not go stale when the receipts moved"
+
+out=$("$kb" enola findings --repo rails-shop)
+expect "$out" "constraints|Constraint component api matches nothing" "findings does not list a rails-shop finding"
+"$kb" enola judge "constraints|Constraint component api matches nothing" noise --reason "the example has no routes" >/dev/null
+out=$("$kb" enola findings --repo rails-shop)
+! grep -q "component api matches nothing" <<<"$out" || fail "a judged finding is still listed"
+out=$("$kb" enola findings --repo rails-shop --all)
+expect "$out" "component api matches nothing  \[noise\]" "--all does not show the judgment"
+
+out=$("$kb" enola govern wiki/shop/permanent/architecture.md)
+expect "$out" "app/jobs/\*\*" "govern does not name the code a page anchors"
+out=$("$kb" enola govern app/jobs/order_mailer_job.rb 2>/dev/null)
+expect "$out" "wiki/shop/permanent/architecture.md" "govern does not name the page governing a file"
+expect "$out" "Plan report" "govern does not carry the pre-edit contract"
+
+"$kb" enola baseline pin rails-shop >/dev/null 2>&1
+set +e
+out=$("$kb" enola check rails-shop 2>&1)
+code=$?
+set -e
+[ "$code" -eq 0 ] || fail "check exited $code"
+expect "$out" "PASS" "check did not grade against the pinned baseline"
+
+out=$(ENOLA_BIN=/nonexistent "$kb" enola impact Order)
+expect "$out" "enola is not installed; the graph was not asked" "an absent binary is not named"
+out=$(cd "$work" && "$kb" enola generate)
+expect "$out" "no cluster config" "an absent config is not named"
+
+echo "test-kb: ok"

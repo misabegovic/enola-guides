@@ -1,7 +1,7 @@
-cluster: shop
-knowledge: wiki
+# The members, by path relative to this file; enola labels each by its
+# directory's name. The knowledge base is a member too, so the pages'
+# enola_intent anchors compile over the code beside them.
 repos:
-  - path: ../rails-shop
-    label: shop
-  - path: ../ember-app
-    label: shop-ui
+  - ../rails-shop
+  - ../ember-app
+  - .

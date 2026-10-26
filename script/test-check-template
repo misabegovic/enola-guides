@@ -1,16 +1,28 @@
 #!/bin/bash
-# Runs templates/enola-check.sh end to end: a Rails fixture whose base branch
-# is clean and whose head adds a job calling a controller, graded with the
-# constraints starter's law. Passes when the comment names the law and a
-# full (not partial) verdict, and the script exits 0 under -warn-only.
+# Runs templates/enola-check.sh end to end on a Rails fixture whose base
+# branch is clean, graded with the constraints starter's law and an advisory
+# law of the fixture's own. Each case is a branch or a way of running it:
+#
+#   warn-only     a job calls a controller: the comment names the law and a
+#                 full verdict, and the step exits 0
+#   enforce       the same change with ENOLA_CHECK_ENFORCE=1 exits 1 and
+#                 still renders and posts
+#   advisory      only the advisory law breaks: enforced, it reports and
+#                 exits 0
+#   clean         a change that moves no structure says so and exits 0
+#   no ruby       the comment falls back to enola's own summary
+#   shallow       a depth-1 clone on CI fails the step instead of passing
+#   comment       with a stubbed gh, an existing comment is edited by its
+#                 numeric REST id
 set -euo pipefail
 cd "$(dirname "$0")/.."
 here=$PWD
+version="$(cat "$here/ENOLA_VERSION")"
 
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
 repo="$work/shop"
-mkdir -p "$repo/app/controllers" "$repo/app/jobs" "$repo/enola/constraints" "$repo/ci"
+mkdir -p "$repo/app/controllers" "$repo/app/jobs" "$repo/app/mailers" "$repo/enola/constraints" "$repo/ci"
 cd "$repo"
 
 git init -q -b main
@@ -31,6 +43,26 @@ class ReceiptJob
   def perform(order); end
 end
 RUBY
+cat > app/mailers/receipt_mailer.rb <<'RUBY'
+class ReceiptMailer
+  def perform(order); end
+end
+RUBY
+cat > enola/constraints/mail.yaml <<'YAML'
+components:
+  - name: receipt-mailer
+    match: ["app/mailers/receipt_mailer.rb"]
+  - name: controllers
+    match: ["app/controllers/**"]
+
+rules:
+  - id: mailers-stay-out-of-controllers
+    forbid: receipt-mailer
+    to: controllers
+    via: calls
+    mode: advisory
+    because: "a fixture's advisory law: reported, never failing"
+YAML
 cp "$here/templates/constraints-starter/background-jobs-never-invoke-controller-code.rb" enola/constraints/
 cp "$here/templates/enola-check.sh" "$here/templates/enola-findings.rb" ci/
 git add -A && git commit -qm base
@@ -38,7 +70,7 @@ git clone -q --bare . "$work/origin.git"
 git remote add origin "$work/origin.git"
 git fetch -q origin
 
-git checkout -qb feature
+git checkout -qb feature main
 cat > app/jobs/receipt_job.rb <<'RUBY'
 class ReceiptJob
   def perform(order)
@@ -48,11 +80,109 @@ end
 RUBY
 git commit -qam "a job calls a controller"
 
-out=$(env -u CI -u PR_NUMBER PR_BASE_BRANCH=main ENOLA_VERSION="$(cat "$here/ENOLA_VERSION")" bash ci/enola-check.sh)
-echo "$out"
+git checkout -qb advisory main
+cat > app/mailers/receipt_mailer.rb <<'RUBY'
+class ReceiptMailer
+  def perform(order)
+    OrdersController.render_receipt(order)
+  end
+end
+RUBY
+git commit -qam "a mailer calls a controller"
+
+git checkout -qb clean main
+cat > app/jobs/receipt_job.rb <<'RUBY'
+# Sends the receipt once the order is paid.
+class ReceiptJob
+  def perform(order); end
+end
+RUBY
+git commit -qam "a comment"
 
 fail() { echo "test-check-template: $1" >&2; exit 1; }
-grep -q 'background-jobs-never-invoke-controller-code' <<<"$out" || fail "the comment does not name the law"
-grep -q 'rubydex-call: ReceiptJob#perform' <<<"$out" || fail "no Rubydex fact reached the verdict"
-! grep -q 'Partial verdict' <<<"$out" || fail "the verdict is partial"
+
+# run <branch> [VAR=value...]: runs the template on that branch and leaves
+# its output in $out and its exit code in $code.
+run() {
+  local branch=$1
+  shift
+  git checkout -q "$branch"
+  set +e
+  out=$(env -u CI -u PR_NUMBER PR_BASE_BRANCH=main ENOLA_VERSION="$version" "$@" bash ci/enola-check.sh 2>&1)
+  code=$?
+  set -e
+  printf -- '--- %s %s (exit %s)\n%s\n' "$branch" "$*" "$code" "$out"
+}
+
+run feature
+[ "$code" -eq 0 ] || fail "warn-only: exited $code"
+grep -q 'background-jobs-never-invoke-controller-code' <<<"$out" || fail "warn-only: the comment does not name the law"
+grep -q 'rubydex-call: ReceiptJob#perform' <<<"$out" || fail "warn-only: no Rubydex fact reached the verdict"
+grep -q 'Nothing is blocked' <<<"$out" || fail "warn-only: the comment does not say nothing is blocked"
+! grep -q 'Partial verdict' <<<"$out" || fail "warn-only: the verdict is partial"
+
+run feature ENOLA_CHECK_ENFORCE=1
+[ "$code" -eq 1 ] || fail "enforce: a regression exited $code, not 1"
+grep -q 'This blocks the merge' <<<"$out" || fail "enforce: the comment does not say it blocks"
+grep -q 'background-jobs-never-invoke-controller-code' <<<"$out" || fail "enforce: the comment does not name the law"
+
+run advisory ENOLA_CHECK_ENFORCE=1
+[ "$code" -eq 0 ] || fail "advisory: an advisory law's breach exited $code under enforcement"
+grep -q 'Below the floor' <<<"$out" || fail "advisory: the breach is not reported below the floor"
+grep -q 'mailers-stay-out-of-controllers' <<<"$out" || fail "advisory: the comment does not name the law"
+
+run clean ENOLA_CHECK_ENFORCE=1
+[ "$code" -eq 0 ] || fail "clean: exited $code"
+grep -q 'No new architectural findings' <<<"$out" || fail "clean: the comment does not say so"
+
+# Everything on PATH but ruby.
+noruby="$work/noruby"
+mkdir -p "$noruby"
+for d in ${PATH//:/ }; do
+  for f in "$d"/*; do
+    name=$(basename "$f")
+    case "$name" in ruby | ruby[0-9]* | irb) continue ;; esac
+    [ -e "$noruby/$name" ] || ln -s "$f" "$noruby/$name" 2>/dev/null || true
+  done
+done
+run feature PATH="$noruby"
+[ "$code" -eq 0 ] || fail "no ruby: exited $code"
+grep -q "ruby is not on this agent" <<<"$out" || fail "no ruby: the fallback is not named"
+grep -q 'Change summary' <<<"$out" || fail "no ruby: enola's summary is not in the comment"
+
+shallow="$work/shallow"
+git push -q origin feature
+git clone -q --depth 1 --branch feature "file://$work/origin.git" "$shallow"
+set +e
+out=$(cd "$shallow" && env -u PR_NUMBER CI=1 PR_BASE_BRANCH=main ENOLA_VERSION="$version" bash ci/enola-check.sh 2>&1)
+code=$?
+set -e
+printf -- '--- shallow CI=1 (exit %s)\n%s\n' "$code" "$out"
+[ "$code" -eq 1 ] || fail "shallow: a depth-1 clone on CI exited $code, not 1"
+grep -q 'did not run: this is a shallow clone' <<<"$out" || fail "shallow: the reason is not named"
+
+# A gh that answers the comment lookup with one marked comment, numeric id
+# 4242, and logs every call.
+stub="$work/stub"
+mkdir -p "$stub"
+cat > "$stub/gh" <<'SH'
+#!/bin/bash
+echo "$*" >> "$GH_LOG"
+case "$1 $2" in
+  "auth status") exit 0 ;;
+  "api repos/{owner}/{repo}/issues/7/comments")
+    filter=""
+    while [ $# -gt 0 ]; do [ "$1" = --jq ] && filter=$2; shift; done
+    printf '[{"id": 11, "body": "unrelated"}, {"id": 4242, "body": "<!-- enola-check -->\\nold"}]' | jq -r "$filter"
+    ;;
+esac
+exit 0
+SH
+chmod +x "$stub/gh"
+export GH_LOG="$work/gh.log"
+: > "$GH_LOG"
+run feature PATH="$stub:$PATH" PR_NUMBER=7
+grep -q 'updated the existing enola comment' <<<"$out" || fail "comment: the existing comment was not updated"
+grep -q '^api -X PATCH repos/{owner}/{repo}/issues/comments/4242 ' "$GH_LOG" || fail "comment: the edit did not use the numeric id 4242"
+
 echo "test-check-template: ok"

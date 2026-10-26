@@ -13,6 +13,14 @@ MCP: modules, symbols, routes, storage, and how they depend on each other.
 The map is built from a snapshot of the code at a commit, and a change is
 graded by comparing the snapshot before it with the snapshot after it.
 
+The tools below are enola's MCP tools. If none of them is in reach, the
+server is not registered; in Claude Code that is
+`claude mcp add-json enola '{"command":"enola","alwaysLoad":true}'` (Claude
+Code 2.1.287 or later; on an older one `claude mcp add enola enola`), then a
+new session. If they are listed by name only (deferred), load them with
+ToolSearch before the first one. The CLI answers the same questions
+without the server: `enola impact`, `enola plan`, `enola check`.
+
 Before changing code whose impact is not obvious:
 
 - `impact_analysis`: what transitively depends on this, before you touch it.
@@ -37,9 +45,13 @@ they cost a fraction of the file reading they replace.
 If the session-end hook or the CI check reports a finding, read it the same
 way: it names the structural change and the rule it crossed, and its first
 suggested action is the smallest cut the graph can see. If it reports
-instead that it could not compare, the baseline was taken against a
-different commit or a different version of enola; nothing is wrong with
-your change, run `set_baseline` again and re-check.
+instead that it declined to grade, the two snapshots were not produced the
+same way (a different enola version, different ignore globs); nothing is
+wrong with your change, run `set_baseline` again and re-check. A partial
+verdict graded only what both snapshots share; it names what it left out.
+
+`enola install` writes `.claude/rules/enola.md`, which tells the agent much
+of this on every session. Keep that rule or this skill, not both.
 
 --- stderr
 
