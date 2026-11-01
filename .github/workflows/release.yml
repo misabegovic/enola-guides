@@ -32,7 +32,7 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.3"
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@v7
       - name: Build every package
         run: |
           uv venv /tmp/venv && uv pip install --python /tmp/venv/bin/python build
